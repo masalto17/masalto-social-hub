@@ -31,6 +31,15 @@ precio final del panel y obtener aprobacion expresa.
 
 No incluye personas, leads, sorteos, consentimientos, pagos ni integracion Accred.
 
+## Portabilidad
+
+Las migraciones usan PostgreSQL, RLS y la interfaz estandar de Supabase Auth. Deben
+funcionar sin cambios tanto en Supabase administrado como self-host. No se aceptan
+funciones exclusivas de un plan o modalidad de alojamiento dentro del nucleo.
+
+El contrato y su control automatico estan definidos en
+`docs/27-database-portability.md` y `npm run db:portability`.
+
 ## Reglas de seguridad
 
 - El alta de organizaciones y del primer administrador es una operacion de

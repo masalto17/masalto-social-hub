@@ -12,9 +12,10 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "db:portability": "node scripts/check-database-portability.mjs",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
-    "check": "npm run lint && npm run typecheck && npm run build"
+    "check": "npm run db:portability && npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",

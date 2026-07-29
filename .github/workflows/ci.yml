@@ -30,6 +30,9 @@ jobs:
       - name: Audit production dependencies
         run: npm audit --omit=dev
 
+      - name: Check database portability
+        run: npm run db:portability
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 

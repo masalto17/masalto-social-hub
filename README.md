@@ -62,6 +62,7 @@ Crear una PWA operativa para:
 - [Variantes de copy por canal](docs/24-channel-copy-variants.md)
 - [Registro de eventos publicos](docs/25-public-event-registry.md)
 - [Fases de campaña](docs/26-campaign-phases.md)
+- [Portabilidad de base de datos](docs/27-database-portability.md)
 
 El backlog contempla una futura biblioteca de marcas, plantillas recurrentes y skills
 de validacion visual. Estas funciones no forman parte del carril critico de Sabroso.

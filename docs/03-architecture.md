@@ -32,6 +32,11 @@ flowchart TD
 | Hosting | Vercel |
 | Web publica | masalto.com.ar |
 
+La base se mantiene portable entre Supabase administrado y self-host: PostgreSQL,
+migraciones SQL, RLS y la interfaz estandar de Supabase Auth. Storage, jobs, webhooks y
+procesos asincronos se consumen mediante adaptadores reemplazables y no forman parte
+obligatoria del nucleo. Ver `27-database-portability.md`.
+
 ## MasAlto Data Core
 
 Capa comun de datos para identidad, eventos, campanas y trazabilidad.
