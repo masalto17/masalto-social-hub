@@ -6,6 +6,7 @@ import {
   FileImage,
   Globe2,
   Inbox,
+  LogOut,
   Megaphone,
 } from "lucide-react";
 import Image from "next/image";
@@ -22,7 +23,13 @@ const navItems = [
   { href: "/", label: "Web pública", icon: Globe2 },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  authConfigured,
+  children,
+}: {
+  authConfigured: boolean;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
 
   return (
@@ -61,6 +68,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+
+        {authConfigured ? (
+          <form className="logout-form" action="/logout" method="post">
+            <button className="nav-item" type="submit">
+              <LogOut size={18} aria-hidden="true" />
+              <span>Cerrar sesión</span>
+            </button>
+          </form>
+        ) : null}
       </aside>
 
       <section className="workspace">{children}</section>

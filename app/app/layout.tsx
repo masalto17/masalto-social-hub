@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { WorkspaceProvider } from "@/components/workspace/workspace-provider";
+import { getAuthMode } from "@/lib/supabase/auth-mode";
 
 export const metadata: Metadata = {
   title: {
@@ -16,9 +17,11 @@ export const metadata: Metadata = {
 export default function InternalAppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const authConfigured = getAuthMode() === "configured";
+
   return (
     <WorkspaceProvider>
-      <AppShell>{children}</AppShell>
+      <AppShell authConfigured={authConfigured}>{children}</AppShell>
     </WorkspaceProvider>
   );
 }
