@@ -158,3 +158,26 @@ test("reschedules a publishing task and records the new date", async ({ page }) 
   await page.goto("/app");
   await expect(page.getByText(/Publicación reprogramada/)).toBeVisible();
 });
+
+test("downloads the editorial plan without publishing content", async ({ page }) => {
+  await page.goto("/app/calendario");
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Exportar CSV" }).click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toMatch(
+    /^plan-publicaciones-\d{4}-\d{2}-\d{2}\.csv$/,
+  );
+  const content = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of content) {
+    chunks.push(Buffer.from(chunk));
+  }
+  const csv = Buffer.concat(chunks).toString("utf8");
+
+  expect(csv).toContain('"Fecha programada";"Canal"');
+  await expect(
+    page.getByText("Plan editorial exportado. La descarga no publica contenido."),
+  ).toBeVisible();
+});
