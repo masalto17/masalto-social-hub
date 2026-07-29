@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock3, LayoutDashboard, MapPin } from "lucide-react";
-import { demoWorkspace } from "@/lib/demo-workspace";
+import { publicEvents } from "@/lib/public-events";
 import { formatStatus } from "@/lib/workspace-model";
 import styles from "./catalog.module.css";
 
@@ -20,10 +20,6 @@ export const metadata: Metadata = {
     url: "https://eventos.masalto.com.ar",
   },
 };
-
-const publicEvents = demoWorkspace.events.filter(
-  (event) => event.websiteStatus !== "hidden" && event.websiteStatus !== "archived",
-);
 
 export default function PublicCatalogPage() {
   return (
@@ -55,7 +51,7 @@ export default function PublicCatalogPage() {
           <article className={styles.event} key={event.id}>
             <Link className={styles.poster} href={`/${event.slug}`}>
               <Image
-                src="/events/sabroso-2026/flyer.webp"
+                src={event.assets.poster}
                 alt={`Flyer de ${event.name}`}
                 fill
                 loading="eager"
@@ -74,7 +70,7 @@ export default function PublicCatalogPage() {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
-                  }).format(new Date(event.startsAt))}
+                  }).format(new Date(event.startDate))}
                 </span>
                 <span>
                   <Clock3 aria-hidden="true" size={18} />
@@ -82,12 +78,12 @@ export default function PublicCatalogPage() {
                     hour: "2-digit",
                     minute: "2-digit",
                     hour12: false,
-                  }).format(new Date(event.startsAt))}{" "}
+                  }).format(new Date(event.startDate))}{" "}
                   h
                 </span>
                 <span>
                   <MapPin aria-hidden="true" size={18} />
-                  {event.venueName} · {event.city}
+                  {event.venue.displayName} · {event.venue.city}
                 </span>
               </div>
               <Link className={styles.eventCta} href={`/${event.slug}`}>
