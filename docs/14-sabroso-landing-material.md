@@ -80,8 +80,7 @@ export function SabrosoJsonLd() {
       url: buildTicketUrl(),
       availability: "https://schema.org/InStock", // preventa
       priceCurrency: "ARS",
-      // price: definir cuando haya valor confirmado de Entradaweb
-      validFrom: "2026-07-29T00:00:00-03:00",
+      price: 15000,
     },
     organizer: {
       "@type": "Organization",
@@ -98,9 +97,8 @@ export function SabrosoJsonLd() {
 }
 ```
 
-Nota: Google pide `price` para rich results de Event con oferta. Mientras no haya precio
-confirmado, el JSON-LD es valido sin `price` pero no dispara el snippet de precio.
-Agregar `price` cuando Entradaweb confirme valor.
+Precio confirmado por Hugo el 29 de julio de 2026: primeras 500 anticipadas a ARS
+15.000. El JSON-LD integrado publica `price: 15000` y `priceCurrency: "ARS"`.
 
 ## 4. Medicion (Umami, candidato - sujeto a decision)
 
@@ -159,8 +157,101 @@ El tercer test asume que la URL configurada apunta a entradaweb.com.ar. En previ
 env, `buildTicketUrl` devuelve `#`; setear `NEXT_PUBLIC_SABROSO_TICKET_URL` en el entorno
 de test con una URL de entradaweb de ejemplo para que el assert de UTM sea valido.
 
+## 6. Meta Pixel + GA4 compartido (embudo completo con EntradaWeb)
+
+Hallazgo clave (ver docs/15): EntradaWeb dispara Meta Pixel y GA4 en su propio checkout,
+con los eventos estandar de ecommerce (Meta: PageView, AddToCart, InitiateCheckout,
+Purchase; GA4: page_view, add_to_cart, begin_checkout, purchase). Si usamos el MISMO
+Pixel/GA4 de MasAlto en esta landing Y en la config del evento en EntradaWeb, obtenemos
+atribucion de embudo completo: anuncio -> landing (PageView/ViewContent) -> checkout
+EntradaWeb (Purchase) atribuido al anuncio pago.
+
+Requisitos previos (no bloquean el codigo, si bloquean el encendido):
+- Crear un Meta Pixel de MasAlto y una propiedad GA4 de MasAlto. Sus IDs van por env.
+- Cargar esos MISMOS IDs en EntradaWeb: Herramientas de Marketing -> Herramientas de
+  Seguimiento -> evento -> Meta Pixel / GA4. (Accion de Hugo en el panel, no de Codex.)
+- No encender hasta aprobar politica de privacidad y retencion (ley 25.326) y cumplir
+  terminos de Meta/Google. Consentimiento de cookies si aplica.
+
+Env vars sugeridas:
+```
+NEXT_PUBLIC_ANALYTICS_ENABLED=false
+NEXT_PUBLIC_META_PIXEL_ID=
+NEXT_PUBLIC_GA4_MEASUREMENT_ID=   # formato G-XXXXXXXXXX
+NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL=
+```
+
+Estado integrado por Codex: el snippet siguiente queda como antecedente. La
+implementacion vigente en `components/analytics/` agrega tres controles obligatorios:
+feature flag apagado, correo de privacidad valido y consentimiento explicito. Ver
+`docs/17-privacy-and-consent.md`.
+
+Carga condicional propuesta originalmente:
+
+```tsx
+// components/analytics.tsx  (server component que inyecta los scripts)
+import Script from "next/script";
+
+export function Analytics() {
+  const pixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  const ga4 = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+  return (
+    <>
+      {pixel && (
+        <Script id="meta-pixel" strategy="afterInteractive">
+          {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','${pixel}');fbq('track','PageView');`}
+        </Script>
+      )}
+      {ga4 && (
+        <>
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga4}`} strategy="afterInteractive" />
+          <Script id="ga4" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());gtag('config','${ga4}');`}
+          </Script>
+        </>
+      )}
+    </>
+  );
+}
+```
+
+Evento de intencion de compra en el CTA (alinea con InitiateCheckout / begin_checkout que
+EntradaWeb completa como Purchase del otro lado):
+
+```tsx
+<a
+  href={buildTicketUrl()}
+  data-umami-event="click_comprar"
+  onClick={() => {
+    if (typeof window !== "undefined") {
+      window.fbq?.("track", "InitiateCheckout");
+      window.gtag?.("event", "begin_checkout");
+    }
+  }}
+  rel="noopener"
+>
+  Comprar entradas
+</a>
+```
+
+Nota: la landing solo emite hasta InitiateCheckout/begin_checkout. El Purchase lo emite
+EntradaWeb en su checkout. Por eso el ID debe ser el mismo en ambos lados.
+
+El mismo ID es necesario pero no suficiente para GA4: se debe configurar medicion entre
+dominios para `eventos.masalto.com.ar` y EntradaWeb, verificar que el checkout preserve
+el parametro de vinculacion y completar una compra de prueba. Si EntradaWeb no permite
+esa configuracion, GA4 puede dividir la sesion aunque reciba el evento `purchase`.
+
 ## Decisiones abiertas que afectan este material
 
-- Precio de la oferta (Entradaweb): pendiente.
-- Analitica (Umami u otra): pendiente (docs/06). No cargar script hasta aprobar.
-- Asset OG real `og/sabroso.jpg`: pendiente de diseño.
+- Precio: primeras 500 anticipadas a ARS 15.000.
+- Analitica oficial: Meta Pixel + GA4. Umami queda como candidato complementario.
+  Pendiente crear/confirmar IDs, completar la politica y validar medicion entre dominios.
+- Asset OG real integrado: `/events/sabroso-2026/social.jpg`.
+- Cargar los MISMOS Pixel/GA4 en EntradaWeb (accion de Hugo).

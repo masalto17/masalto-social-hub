@@ -17,6 +17,7 @@ Accred, backend, datos personales ni publicacion automatica multired.
 - Social Hub agrega `utm_source=masalto`, `utm_medium=event_page` y
   `utm_campaign=sabroso_2026`.
 - El piloto no procesa pagos ni copia compradores.
+- Primeras 500 entradas anticipadas: precio promocional confirmado de ARS 15.000.
 
 ## Entregable inicial
 
@@ -54,7 +55,7 @@ cuando exista un segundo evento confirmado.
 - Supabase.
 - Leads y sorteos.
 - Postiz, Metricool o APIs sociales directas.
-- Umami u otro proveedor de analitica.
+- Umami queda fuera del carril inicial. Meta Pixel y GA4 se preparan apagados.
 
 ## DNS y despliegue
 
@@ -66,6 +67,6 @@ cuando exista un segundo evento confirmado.
 ## Puertas pendientes
 
 1. URL directa del evento en Entradaweb; mientras tanto se usa el perfil del productor.
-2. Revision visual Hugo/Ivo.
+2. Revision visual Hugo.
 3. Aprobacion para crear GitHub y desplegar Vercel.
 4. Target DNS exacto mostrado por Vercel.

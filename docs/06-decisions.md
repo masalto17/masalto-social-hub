@@ -42,15 +42,13 @@ Decision: Social Hub, Accred y web MasAlto se integran por APIs, webhooks y cont
 
 Motivo: evitar acoplamiento directo, proteger produccion y permitir desarrollo paralelo.
 
-# Propuestas pendientes de aprobacion (auditoria 2026-07-29)
+# Auditoria y decisiones del piloto (2026-07-29)
 
-Lo siguiente son PROPUESTAS, no decisiones cerradas. Requieren aprobacion de
-Hugo/Ivo antes de considerarse vigentes. Origen: auditoria del plan tecnico y
-respuesta cruzada de Codex.
+Cada apartado indica si es una decision aprobada o una propuesta pendiente.
 
-## Propuesta - Accred fuera del camino critico de Sabroso
+## Decision - Accred fuera del camino critico de Sabroso
 
-Propuesta: para Sabroso 28/08/2026, la venta NO usa Accred. Se vende con ticketera
+Decision: para Sabroso 28/08/2026, la venta NO usa Accred. Se vende con ticketera
 externa entradaweb.com.ar (confirmado por Hugo, 2026-07-29).
 
 Motivo: Accred no expone hoy API publica/partner para Social Hub. Verificado en el
@@ -67,16 +65,16 @@ contrato confirmados.
 Consecuencia de medicion: entradaweb probablemente no envia webhook de orden. La venta
 se mide por UTM + redirect + import CSV (MSH-071). El dashboard de ventas sera manual.
 
-## Propuesta - Herramienta de publicacion (a comparar)
+## Decision - Herramienta de publicacion pendiente de elegir
 
-Propuesta: NO cerrar proveedor todavia. Para Sabroso, calendario y aprobacion dentro de
+Decision: NO cerrar proveedor todavia. Para Sabroso, calendario y aprobacion dentro de
 Social Hub + publicacion manual asistida como respaldo. Probar Meta primero.
 
 Comparar antes de elegir: Postiz (open-source, AGPL, self-host = suma operacion, OAuth,
 backups), Metricool (API paga y limitada) y APIs directas. Postiz queda como candidato,
 no eleccion.
 
-## Propuesta - Medicion con Umami (candidato)
+## Propuesta - Umami como complemento
 
 Propuesta: usar Umami self-host para medir anuncio -> clic -> compra, sujeto a definir
 politica de privacidad y de retencion.
@@ -86,24 +84,39 @@ hasta borrado manual; y leads/sorteos SI recopilan PII bajo ley 25.326 (informar
 finalidad, responsable, destinatarios, derechos y consentimiento). Umami no elimina esas
 obligaciones. Candidato recomendado, no decision.
 
-## Propuesta - Alcance reducido a carril Sabroso
+## Decision - Alcance reducido a carril Sabroso
 
-Propuesta: recortar el MVP al carril que mueve entradas de Sabroso. Diferir conector
+Decision: recortar el MVP al carril que mueve entradas de Sabroso. Diferir conector
 Accred real, auth de roles completa y publicacion automatica multired.
 
 ## Propuesta - Roles iniciales
 
 Propuesta: 3 roles para el piloto: admin, editor/aprobador, lector. Expandir despues.
 
-## Propuesta - Puertas de seguridad obligatorias antes del primer dato real
+## Decision - Puertas de seguridad obligatorias antes del primer dato real
 
-Propuesta (controles obligatorios, aun no hay fuga porque no hay backend ni secretos):
+Decision (controles obligatorios, aun no hay fuga porque no hay backend ni secretos):
 .gitignore, versiones fijadas + lockfile, RLS activo, variables seguras en Vercel,
 firma e idempotencia de webhooks, CI con Playwright bloqueando merges.
 
-## Propuesta - Division de trabajo entre agentes
+## Decision - Division de trabajo entre agentes
 
 Propuesta: ver 10-agent-coordination.md. Codex posee Social Hub (arquitectura, dev,
 seguridad, datos propios, UI, CI, publicacion). Claude posee Accred (repo, contratos,
 integrations/accred/). Revision cruzada obligatoria, sin decisiones unilaterales.
-Aprobacion, merge y produccion: Hugo/Ivo. Sin tercer agente.
+Aprobacion, merge y produccion: Hugo. Sin tercer agente.
+
+## Meta Pixel y GA4
+
+Decision: Meta Pixel y Google Analytics 4 son la estrategia oficial de atribucion de
+conversion. La activacion requiere usar los mismos IDs de MasAlto en Social Hub y
+EntradaWeb, politica y consentimiento vigentes, y validacion final de Hugo.
+
+Umami puede evaluarse despues como medicion first-party complementaria; no reemplaza el
+embudo de compra informado por EntradaWeb.
+
+## Aprobador vigente
+
+Decision: por ahora Hugo es el unico aprobador de cambios, merges, publicaciones,
+credenciales, despliegues y produccion. Otros usuarios se incorporaran mediante una
+decision posterior.

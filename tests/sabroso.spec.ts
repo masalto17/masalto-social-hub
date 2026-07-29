@@ -38,4 +38,28 @@ test("publishes Event structured data", async ({ page }) => {
   expect(event.startDate).toBe("2026-08-28T23:00:00-03:00");
   expect(event.location.name).toBe("Hugo Espectáculos");
   expect(event.offers.url).toContain("entradaweb.com.ar");
+  expect(event.offers.price).toBe(15000);
+  expect(event.offers.priceCurrency).toBe("ARS");
+});
+
+test("keeps optional analytics disabled without production configuration", async ({
+  page,
+}) => {
+  await page.goto(eventPath);
+
+  await expect(page.locator("#meta-pixel")).toHaveCount(0);
+  await expect(page.locator("#ga4")).toHaveCount(0);
+  await expect(page.getByLabel("Preferencias de privacidad")).toHaveCount(0);
+});
+
+test("publishes a draft privacy route without indexing it", async ({ page }) => {
+  const response = await page.goto("/privacidad");
+
+  expect(response?.status()).toBe(200);
+  await expect(page).toHaveTitle(/Privacidad/);
+  await expect(page.getByRole("heading", { name: "Política de privacidad" })).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    /noindex/,
+  );
 });

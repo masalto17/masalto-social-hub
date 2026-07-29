@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Nunito_Sans } from "next/font/google";
+import { Analytics } from "@/components/analytics/analytics";
+import { getAnalyticsConfig } from "@/lib/analytics-config";
 import "./globals.css";
 
 const nunitoSans = Nunito_Sans({
@@ -23,9 +25,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const analyticsConfig = getAnalyticsConfig();
+
   return (
     <html lang="es">
-      <body className={`${nunitoSans.variable} ${montserrat.variable}`}>{children}</body>
+      <body className={`${nunitoSans.variable} ${montserrat.variable}`}>
+        {children}
+        <Analytics config={analyticsConfig} />
+      </body>
     </html>
   );
 }

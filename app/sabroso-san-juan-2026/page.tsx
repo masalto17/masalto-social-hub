@@ -90,6 +90,9 @@ export default function SabrosoEventPage() {
       "@type": "Offer",
       url: ticketUrl,
       availability: "https://schema.org/InStock",
+      price: sabrosoEvent.offer.price,
+      priceCurrency: sabrosoEvent.offer.priceCurrency,
+      description: `${sabrosoEvent.offer.label}. ${sabrosoEvent.offer.description}`,
     },
   };
 
@@ -138,12 +141,19 @@ export default function SabrosoEventPage() {
             <span>{sabrosoEvent.displayTime}</span>
             <span>{sabrosoEvent.venue.displayName}</span>
           </div>
+          <p className={styles.promo}>
+            {sabrosoEvent.offer.label}:{" "}
+            <strong>
+              $ {new Intl.NumberFormat("es-AR").format(sabrosoEvent.offer.price)}
+            </strong>
+          </p>
           <a
             className={styles.primaryCta}
             href={ticketUrl}
             target="_blank"
             rel="noreferrer"
             data-analytics-event="click_comprar"
+            data-event-name={sabrosoEvent.name}
           >
             <Ticket aria-hidden="true" size={20} />
             Comprar entradas
@@ -195,6 +205,7 @@ export default function SabrosoEventPage() {
           target="_blank"
           rel="noreferrer"
           data-analytics-event="click_comprar"
+          data-event-name={sabrosoEvent.name}
         >
           Entradas en Entradaweb
           <ExternalLink aria-hidden="true" size={18} />
@@ -204,6 +215,7 @@ export default function SabrosoEventPage() {
       <footer className={styles.footer}>
         <span>MasAlto Producciones</span>
         <span>Sabroso · San Juan · 2026</span>
+        <a href="/privacidad">Privacidad</a>
       </footer>
     </main>
   );

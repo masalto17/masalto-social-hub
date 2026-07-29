@@ -127,6 +127,18 @@
   border-left: 1px solid rgba(255, 255, 255, 0.28);
 }
 
+.promo {
+  margin: 22px 0 0;
+  color: var(--event-gold);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.promo strong {
+  color: #ffffff;
+  font-size: 20px;
+}
+
 .primaryCta,
 .secondaryCta {
   display: inline-flex;
@@ -302,6 +314,15 @@
   padding: 30px 0;
   color: rgba(255, 255, 255, 0.54);
   font-size: 12px;
+}
+
+.footer a {
+  color: inherit;
+}
+
+.footer a:hover,
+.footer a:focus-visible {
+  color: #ffffff;
 }
 
 @media (max-width: 900px) {
