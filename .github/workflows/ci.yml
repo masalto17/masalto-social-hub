@@ -41,3 +41,35 @@ jobs:
 
       - name: Smoke tests
         run: npm run test:e2e
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Start local database
+        run: >-
+          npx --yes supabase@2.110.0 start
+          --exclude gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+
+      - name: Lint database
+        run: >-
+          npx --yes supabase@2.110.0 db lint
+          --local
+          --schema public
+          --level error
+          --fail-on error
+
+      - name: Test database policies
+        run: >-
+          npx --yes supabase@2.110.0 test db
+          --local
+          supabase/tests/database

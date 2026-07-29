@@ -2,6 +2,12 @@
 
 Fuente: Documento Funcional Maestro del MVP, seccion 11.
 
+> Este documento conserva el modelo conceptual completo. La implementacion segura
+> vigente del primer corte esta en
+> `supabase/migrations/20260729080655_core_workspace.sql`: usa tablas en `public`,
+> RLS, membresias por organizacion y una proyeccion publica separada. No aplicar los
+> ejemplos SQL de este documento directamente.
+
 ## Esquemas
 
 ```sql

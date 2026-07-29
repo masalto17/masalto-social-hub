@@ -55,13 +55,16 @@ Crear una PWA operativa para:
 - [Privacidad y consentimiento](docs/17-privacy-and-consent.md)
 - [Ecosistema MASH <-> Accred <-> masalto.com.ar](docs/18-ecosystem-interconnection.md)
 - [Accred - worklist para sesion dedicada](docs/19-accred-worklist.md)
+- [Base segura de Supabase](docs/20-supabase-foundation.md)
 
 El backlog contempla una futura biblioteca de marcas, plantillas recurrentes y skills
 de validacion visual. Estas funciones no forman parte del carril critico de Sabroso.
 
 ## Estado
 
-Base local inicial con documentacion tecnica y prototipo navegable aprobado visualmente.
+Prototipo navegable con catálogo público, eventos, campañas, contenido, aprobación y
+calendario con persistencia local. La base Supabase y sus políticas RLS están
+preparadas en una rama separada, pero todavía no fueron aplicadas a un proyecto remoto.
 
 El primer entregable es la landing estatica de Sabroso. Meta Pixel y GA4 estan
 preparados pero apagados; Supabase, proveedor de publicacion y cuentas reales se
