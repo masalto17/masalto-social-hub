@@ -12,6 +12,7 @@ import { demoWorkspace } from "@/lib/demo-workspace";
 import {
   uniqueSlug,
   type ActivityRecord,
+  type NewCampaignPhaseInput,
   type NewCampaignInput,
   type NewContentInput,
   type NewEventInput,
@@ -19,8 +20,9 @@ import {
   type WorkspaceState,
 } from "@/lib/workspace-model";
 
-const STORAGE_KEY = "masalto_social_hub_workspace_v3";
+const STORAGE_KEY = "masalto_social_hub_workspace_v4";
 const LEGACY_STORAGE_KEYS = [
+  "masalto_social_hub_workspace_v3",
   "masalto_social_hub_workspace_v2",
   "masalto_social_hub_workspace_v1",
 ] as const;
@@ -29,6 +31,7 @@ type WorkspaceAction =
   | { type: "hydrate"; state: WorkspaceState }
   | { type: "create_event"; input: NewEventInput }
   | { type: "create_campaign"; input: NewCampaignInput }
+  | { type: "create_campaign_phase"; input: NewCampaignPhaseInput }
   | { type: "create_content"; input: NewContentInput }
   | { type: "import_sales"; input: NewSalesSnapshotInput }
   | { type: "approve_content"; contentId: string }
@@ -41,6 +44,7 @@ type WorkspaceContextValue = {
   hydrated: boolean;
   createEvent: (input: NewEventInput) => void;
   createCampaign: (input: NewCampaignInput) => void;
+  createCampaignPhase: (input: NewCampaignPhaseInput) => boolean;
   createContent: (input: NewContentInput) => void;
   importSales: (input: NewSalesSnapshotInput) => void;
   approveContent: (contentId: string) => void;
@@ -71,7 +75,7 @@ function activity(
 function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
   switch (action.type) {
     case "hydrate":
-      return action.state.version === 3 ? action.state : demoWorkspace;
+      return action.state.version === 4 ? action.state : demoWorkspace;
     case "create_event": {
       const id = crypto.randomUUID();
       const event = {
@@ -116,6 +120,41 @@ function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState
             id,
             "campaign.created",
             `${campaign.name} fue creada como ${campaign.status}.`,
+          ),
+          ...state.activity,
+        ],
+      };
+    }
+    case "create_campaign_phase": {
+      const campaign = state.campaigns.find(
+        (item) => item.id === action.input.campaignId,
+      );
+      const startsAt = new Date(action.input.startsAt).getTime();
+      const endsAt = new Date(action.input.endsAt).getTime();
+      if (
+        !campaign ||
+        endsAt <= startsAt ||
+        startsAt < new Date(campaign.startsAt).getTime() ||
+        endsAt > new Date(campaign.endsAt).getTime()
+      ) {
+        return state;
+      }
+
+      const id = crypto.randomUUID();
+      const phase = {
+        ...action.input,
+        id,
+        createdAt: new Date().toISOString(),
+      };
+      return {
+        ...state,
+        campaignPhases: [...state.campaignPhases, phase],
+        activity: [
+          activity(
+            "campaign_phase",
+            id,
+            "campaign_phase.created",
+            `${phase.name} fue agregada a ${campaign.name}.`,
           ),
           ...state.activity,
         ],
@@ -280,8 +319,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           );
         if (raw) {
           const stored = JSON.parse(raw) as WorkspaceState & {
-            version: 1 | 2 | 3;
+            version: 1 | 2 | 3 | 4;
             salesSnapshots?: WorkspaceState["salesSnapshots"];
+            campaignPhases?: WorkspaceState["campaignPhases"];
             publishingTasks: Array<
               Omit<WorkspaceState["publishingTasks"][number], "copy"> & {
                 copy?: string;
@@ -290,8 +330,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           };
           const state: WorkspaceState = {
             ...stored,
-            version: 3,
+            version: 4,
             salesSnapshots: stored.salesSnapshots ?? [],
+            campaignPhases: stored.campaignPhases ?? [],
             publishingTasks: stored.publishingTasks.map((task) => {
               const content = stored.content.find(
                 (item) => item.id === task.contentId,
@@ -327,6 +368,18 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       hydrated,
       createEvent: (input) => dispatch({ type: "create_event", input }),
       createCampaign: (input) => dispatch({ type: "create_campaign", input }),
+      createCampaignPhase: (input) => {
+        const campaign = state.campaigns.find(
+          (item) => item.id === input.campaignId,
+        );
+        const valid =
+          Boolean(campaign) &&
+          new Date(input.endsAt) > new Date(input.startsAt) &&
+          new Date(input.startsAt) >= new Date(campaign!.startsAt) &&
+          new Date(input.endsAt) <= new Date(campaign!.endsAt);
+        if (valid) dispatch({ type: "create_campaign_phase", input });
+        return valid;
+      },
       createContent: (input) => dispatch({ type: "create_content", input }),
       importSales: (input) => dispatch({ type: "import_sales", input }),
       approveContent: (contentId) =>

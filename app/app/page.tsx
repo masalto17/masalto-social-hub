@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
+import { getUncoveredCampaignPhases } from "@/lib/campaign-phases";
 import { formatStatus } from "@/lib/workspace-model";
 
 export default function DashboardPage() {
@@ -29,6 +30,7 @@ export default function DashboardPage() {
   const approvedCount = state.content.filter((item) =>
     ["approved", "scheduled", "published"].includes(item.status),
   ).length;
+  const uncoveredPhases = getUncoveredCampaignPhases(state);
 
   const metrics = [
     {
@@ -134,6 +136,19 @@ export default function DashboardPage() {
           </article>
         ))}
       </section>
+
+      {uncoveredPhases.length > 0 ? (
+        <section className="coverage-alert" aria-label="Cobertura de campaña">
+          <AlertTriangle aria-hidden="true" size={22} />
+          <div>
+            <strong>
+              {uncoveredPhases.length} fases sin publicaciones previstas
+            </strong>
+            <span>{uncoveredPhases.map((phase) => phase.name).join(" · ")}</span>
+          </div>
+          <Link href="/app/campanas">Revisar fases</Link>
+        </section>
+      ) : null}
 
       <section className="content-grid">
         <div className="panel large-panel">

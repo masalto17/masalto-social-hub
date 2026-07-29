@@ -24,18 +24,19 @@ test("separates the public catalog from the internal workspace", async ({ page }
 test("migrates local content tasks without losing their base copy", async ({
   page,
 }) => {
-  const legacyState = {
+  const legacyState: Record<string, unknown> = {
     ...demoWorkspace,
-    version: 2,
+    version: 3,
     publishingTasks: demoWorkspace.publishingTasks.map((task) => {
       const legacyTask: Record<string, unknown> = { ...task };
       delete legacyTask.copy;
       return legacyTask;
     }),
   };
+  delete legacyState.campaignPhases;
   await page.addInitScript((state) => {
     window.localStorage.setItem(
-      "masalto_social_hub_workspace_v2",
+      "masalto_social_hub_workspace_v3",
       JSON.stringify(state),
     );
   }, legacyState);
@@ -47,22 +48,66 @@ test("migrates local content tasks without losing their base copy", async ({
     .poll(() =>
       page.evaluate(() => {
         const raw = window.localStorage.getItem(
-          "masalto_social_hub_workspace_v3",
+          "masalto_social_hub_workspace_v4",
         );
         return raw ? JSON.parse(raw).version : null;
       }),
     )
-    .toBe(3);
+    .toBe(4);
   const migrated = await page.evaluate(() =>
     JSON.parse(
-      window.localStorage.getItem("masalto_social_hub_workspace_v3") ?? "{}",
+      window.localStorage.getItem("masalto_social_hub_workspace_v4") ?? "{}",
     ),
   );
-  expect(migrated.version).toBe(3);
+  expect(migrated.version).toBe(4);
   expect(migrated.publishingTasks).toHaveLength(3);
+  expect(migrated.campaignPhases).toEqual([]);
   expect(
     migrated.publishingTasks.every((task: { copy?: string }) => Boolean(task.copy)),
   ).toBe(true);
+});
+
+test("creates a campaign phase inside the campaign window", async ({ page }) => {
+  await page.goto("/app/campanas/fases/nueva");
+
+  await page.getByLabel("Campaña").selectOption("campaign_sabroso_launch");
+  await page.getByLabel("Tipo").selectOption("custom");
+  await page.getByLabel("Nombre").fill("Recordatorio de preventa");
+  await page
+    .getByLabel("Objetivo de la fase")
+    .fill("Reforzar la promoción antes del tramo de conversión.");
+  await page.getByLabel("Inicio").fill("2026-08-10T09:00");
+  await page.getByLabel("Cierre").fill("2026-08-12T22:00");
+  await page.getByText("WhatsApp", { exact: true }).click();
+  await page.getByRole("button", { name: "Guardar fase" }).click();
+
+  await expect(page).toHaveURL(/\/app\/campanas$/);
+  const phase = page
+    .getByRole("article")
+    .filter({ hasText: "Recordatorio de preventa" });
+  await expect(phase).toContainText("Personalizada");
+  await expect(phase).toContainText("WhatsApp");
+  await expect(phase).toContainText("0 publicaciones");
+
+  await page.reload();
+  await expect(
+    page.getByRole("article").filter({ hasText: "Recordatorio de preventa" }),
+  ).toBeVisible();
+});
+
+test("rejects a campaign phase outside the campaign window", async ({ page }) => {
+  await page.goto("/app/campanas/fases/nueva");
+
+  await page.getByLabel("Nombre").fill("Fase fuera de rango");
+  await page.getByLabel("Objetivo de la fase").fill("No debe guardarse.");
+  await page.getByLabel("Inicio").fill("2026-07-20T09:00");
+  await page.getByLabel("Cierre").fill("2026-07-21T22:00");
+  await page.getByRole("button", { name: "Guardar fase" }).click();
+
+  await expect(
+    page.getByRole("alert").filter({ hasText: "dentro de la campaña" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/campanas\/fases\/nueva$/);
 });
 
 test("creates an independent event without publishing it", async ({ page }) => {

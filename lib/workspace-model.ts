@@ -22,6 +22,13 @@ export type CampaignStatus =
   | "paused"
   | "finished"
   | "archived";
+export type CampaignPhaseType =
+  | "intrigue"
+  | "announcement"
+  | "desire"
+  | "conversion"
+  | "urgency"
+  | "custom";
 export type ContentStatus =
   | "draft"
   | "in_review"
@@ -70,6 +77,18 @@ export type CampaignRecord = {
   createdAt: string;
 };
 
+export type CampaignPhaseRecord = {
+  id: string;
+  campaignId: string;
+  type: CampaignPhaseType;
+  name: string;
+  objective: string;
+  startsAt: string;
+  endsAt: string;
+  channels: SocialChannel[];
+  createdAt: string;
+};
+
 export type ContentRecord = {
   id: string;
   campaignId: string;
@@ -97,6 +116,7 @@ export type ActivityRecord = {
   entityType:
     | "event"
     | "campaign"
+    | "campaign_phase"
     | "content"
     | "publishing_task"
     | "sales_import";
@@ -121,9 +141,10 @@ export type SalesSnapshotRecord = {
 };
 
 export type WorkspaceState = {
-  version: 3;
+  version: 4;
   events: EventRecord[];
   campaigns: CampaignRecord[];
+  campaignPhases: CampaignPhaseRecord[];
   content: ContentRecord[];
   publishingTasks: PublishingTaskRecord[];
   salesSnapshots: SalesSnapshotRecord[];
@@ -135,6 +156,10 @@ export type NewEventInput = Omit<
   "id" | "slug" | "accredEnabled" | "createdAt"
 >;
 export type NewCampaignInput = Omit<CampaignRecord, "id" | "createdAt">;
+export type NewCampaignPhaseInput = Omit<
+  CampaignPhaseRecord,
+  "id" | "createdAt"
+>;
 export type NewContentInput = Omit<
   ContentRecord,
   "id" | "approvedBy" | "approvedAt" | "createdAt"
@@ -189,6 +214,12 @@ export function formatStatus(value: string) {
     planned: "Planificada",
     active: "Activa",
     paused: "Pausada",
+    intrigue: "Intriga",
+    announcement: "Anuncio",
+    desire: "Deseo",
+    conversion: "Conversión",
+    urgency: "Urgencia",
+    custom: "Personalizada",
     in_review: "En revisión",
     approved: "Aprobado",
     failed: "Fallido",
