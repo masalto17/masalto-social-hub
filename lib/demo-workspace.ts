@@ -1,7 +1,7 @@
 import type { WorkspaceState } from "@/lib/workspace-model";
 
 export const demoWorkspace: WorkspaceState = {
-  version: 1,
+  version: 2,
   events: [
     {
       id: "event_sabroso_2026",
@@ -97,6 +97,7 @@ export const demoWorkspace: WorkspaceState = {
       provider: "manual",
     },
   ],
+  salesSnapshots: [],
   activity: [
     {
       id: "activity_seed_1",

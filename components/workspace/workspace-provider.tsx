@@ -15,16 +15,19 @@ import {
   type NewCampaignInput,
   type NewContentInput,
   type NewEventInput,
+  type NewSalesSnapshotInput,
   type WorkspaceState,
 } from "@/lib/workspace-model";
 
-const STORAGE_KEY = "masalto_social_hub_workspace_v1";
+const STORAGE_KEY = "masalto_social_hub_workspace_v2";
+const LEGACY_STORAGE_KEY = "masalto_social_hub_workspace_v1";
 
 type WorkspaceAction =
   | { type: "hydrate"; state: WorkspaceState }
   | { type: "create_event"; input: NewEventInput }
   | { type: "create_campaign"; input: NewCampaignInput }
   | { type: "create_content"; input: NewContentInput }
+  | { type: "import_sales"; input: NewSalesSnapshotInput }
   | { type: "approve_content"; contentId: string }
   | { type: "schedule_content"; contentId: string }
   | { type: "move_task"; taskId: string; scheduledAt: string }
@@ -36,6 +39,7 @@ type WorkspaceContextValue = {
   createEvent: (input: NewEventInput) => void;
   createCampaign: (input: NewCampaignInput) => void;
   createContent: (input: NewContentInput) => void;
+  importSales: (input: NewSalesSnapshotInput) => void;
   approveContent: (contentId: string) => void;
   scheduleContent: (contentId: string) => boolean;
   moveTask: (taskId: string, scheduledAt: string) => void;
@@ -64,7 +68,7 @@ function activity(
 function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
   switch (action.type) {
     case "hydrate":
-      return action.state.version === 1 ? action.state : demoWorkspace;
+      return action.state.version === 2 ? action.state : demoWorkspace;
     case "create_event": {
       const id = crypto.randomUUID();
       const event = {
@@ -146,6 +150,29 @@ function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState
             id,
             "content.created",
             `${content.title} fue creada para ${tasks.length} canales.`,
+          ),
+          ...state.activity,
+        ],
+      };
+    }
+    case "import_sales": {
+      const id = crypto.randomUUID();
+      const snapshot = {
+        ...action.input,
+        id,
+        source: "entradaweb" as const,
+        importedAt: new Date().toISOString(),
+      };
+
+      return {
+        ...state,
+        salesSnapshots: [...state.salesSnapshots, snapshot],
+        activity: [
+          activity(
+            "sales_import",
+            id,
+            "sales.imported",
+            `${snapshot.totalTickets} entradas agregadas desde EntradaWeb sin conservar PII.`,
           ),
           ...state.activity,
         ],
@@ -242,8 +269,21 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const restore = window.setTimeout(() => {
       try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw) dispatch({ type: "hydrate", state: JSON.parse(raw) as WorkspaceState });
+        const raw =
+          window.localStorage.getItem(STORAGE_KEY) ??
+          window.localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (raw) {
+          const stored = JSON.parse(raw) as
+            | WorkspaceState
+            | (Omit<WorkspaceState, "version" | "salesSnapshots"> & {
+                version: 1;
+              });
+          const state =
+            stored.version === 1
+              ? { ...stored, version: 2 as const, salesSnapshots: [] }
+              : stored;
+          dispatch({ type: "hydrate", state });
+        }
       } catch {
         window.localStorage.removeItem(STORAGE_KEY);
       } finally {
@@ -266,6 +306,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       createEvent: (input) => dispatch({ type: "create_event", input }),
       createCampaign: (input) => dispatch({ type: "create_campaign", input }),
       createContent: (input) => dispatch({ type: "create_content", input }),
+      importSales: (input) => dispatch({ type: "import_sales", input }),
       approveContent: (contentId) =>
         dispatch({ type: "approve_content", contentId }),
       scheduleContent: (contentId) => {

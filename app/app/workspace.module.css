@@ -284,6 +284,34 @@
   gap: 10px;
 }
 
+.summaryList {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.summaryList div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  border-top: 1px solid #eeeeee;
+}
+
+.summaryList div:first-child {
+  border-top: 0;
+}
+
+.summaryList dt {
+  color: #666666;
+}
+
+.summaryList dd {
+  margin: 0;
+  font-weight: 800;
+}
+
 .timelineItem {
   display: grid;
   grid-template-columns: 140px minmax(0, 1fr) 130px auto;
