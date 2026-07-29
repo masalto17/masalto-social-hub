@@ -59,6 +59,7 @@ Crear una PWA operativa para:
 - [Base de autenticacion](docs/21-auth-foundation.md)
 - [Importacion agregada de EntradaWeb](docs/22-entradaweb-import.md)
 - [Exportacion manual de publicaciones](docs/23-manual-publication-export.md)
+- [Variantes de copy por canal](docs/24-channel-copy-variants.md)
 
 El backlog contempla una futura biblioteca de marcas, plantillas recurrentes y skills
 de validacion visual. Estas funciones no forman parte del carril critico de Sabroso.

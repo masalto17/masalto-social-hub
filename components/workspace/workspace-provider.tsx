@@ -19,8 +19,11 @@ import {
   type WorkspaceState,
 } from "@/lib/workspace-model";
 
-const STORAGE_KEY = "masalto_social_hub_workspace_v2";
-const LEGACY_STORAGE_KEY = "masalto_social_hub_workspace_v1";
+const STORAGE_KEY = "masalto_social_hub_workspace_v3";
+const LEGACY_STORAGE_KEYS = [
+  "masalto_social_hub_workspace_v2",
+  "masalto_social_hub_workspace_v1",
+] as const;
 
 type WorkspaceAction =
   | { type: "hydrate"; state: WorkspaceState }
@@ -68,7 +71,7 @@ function activity(
 function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
   switch (action.type) {
     case "hydrate":
-      return action.state.version === 2 ? action.state : demoWorkspace;
+      return action.state.version === 3 ? action.state : demoWorkspace;
     case "create_event": {
       const id = crypto.randomUUID();
       const event = {
@@ -135,6 +138,7 @@ function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState
         id: crypto.randomUUID(),
         contentId: id,
         channel,
+        copy: action.input.channelCopies[channel]?.trim() || content.baseCopy,
         scheduledAt: action.input.scheduledAt,
         status: action.input.status,
         provider: "manual" as const,
@@ -271,21 +275,39 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       try {
         const raw =
           window.localStorage.getItem(STORAGE_KEY) ??
-          window.localStorage.getItem(LEGACY_STORAGE_KEY);
+          LEGACY_STORAGE_KEYS.map((key) => window.localStorage.getItem(key)).find(
+            Boolean,
+          );
         if (raw) {
-          const stored = JSON.parse(raw) as
-            | WorkspaceState
-            | (Omit<WorkspaceState, "version" | "salesSnapshots"> & {
-                version: 1;
-              });
-          const state =
-            stored.version === 1
-              ? { ...stored, version: 2 as const, salesSnapshots: [] }
-              : stored;
+          const stored = JSON.parse(raw) as WorkspaceState & {
+            version: 1 | 2 | 3;
+            salesSnapshots?: WorkspaceState["salesSnapshots"];
+            publishingTasks: Array<
+              Omit<WorkspaceState["publishingTasks"][number], "copy"> & {
+                copy?: string;
+              }
+            >;
+          };
+          const state: WorkspaceState = {
+            ...stored,
+            version: 3,
+            salesSnapshots: stored.salesSnapshots ?? [],
+            publishingTasks: stored.publishingTasks.map((task) => {
+              const content = stored.content.find(
+                (item) => item.id === task.contentId,
+              );
+              return {
+                ...task,
+                copy: task.copy ?? content?.baseCopy ?? "",
+              };
+            }),
+          };
           dispatch({ type: "hydrate", state });
+          LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
         }
       } catch {
         window.localStorage.removeItem(STORAGE_KEY);
+        LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
       } finally {
         setHydrated(true);
       }

@@ -25,8 +25,8 @@ test("exports the publication plan in chronological order", () => {
 test("neutralizes spreadsheet formulas in exported copy", () => {
   const state = {
     ...demoWorkspace,
-    content: demoWorkspace.content.map((item, index) =>
-      index === 0 ? { ...item, baseCopy: "=HYPERLINK(\"bad\")" } : item,
+    publishingTasks: demoWorkspace.publishingTasks.map((task, index) =>
+      index === 0 ? { ...task, copy: "=HYPERLINK(\"bad\")" } : task,
     ),
   };
 

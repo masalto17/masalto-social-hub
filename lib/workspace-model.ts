@@ -86,6 +86,7 @@ export type PublishingTaskRecord = {
   id: string;
   contentId: string;
   channel: SocialChannel;
+  copy: string;
   scheduledAt: string;
   status: ContentStatus;
   provider: "manual";
@@ -120,7 +121,7 @@ export type SalesSnapshotRecord = {
 };
 
 export type WorkspaceState = {
-  version: 2;
+  version: 3;
   events: EventRecord[];
   campaigns: CampaignRecord[];
   content: ContentRecord[];
@@ -139,6 +140,7 @@ export type NewContentInput = Omit<
   "id" | "approvedBy" | "approvedAt" | "createdAt"
 > & {
   channels: SocialChannel[];
+  channelCopies: Partial<Record<SocialChannel, string>>;
   scheduledAt: string;
 };
 export type NewSalesSnapshotInput = Omit<
