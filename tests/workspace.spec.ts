@@ -43,6 +43,16 @@ test("migrates local content tasks without losing their base copy", async ({
   await page.goto("/app/calendario");
   await expect(page.getByText("3 tareas de publicación")).toBeVisible();
 
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = window.localStorage.getItem(
+          "masalto_social_hub_workspace_v3",
+        );
+        return raw ? JSON.parse(raw).version : null;
+      }),
+    )
+    .toBe(3);
   const migrated = await page.evaluate(() =>
     JSON.parse(
       window.localStorage.getItem("masalto_social_hub_workspace_v3") ?? "{}",
