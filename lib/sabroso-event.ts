@@ -18,6 +18,12 @@ export const sabrosoEvent = {
   },
   campaign: "sabroso_2026",
   path: "/sabroso-san-juan-2026",
+  offer: {
+    price: 15000,
+    priceCurrency: "ARS",
+    label: "Primeras 500 anticipadas",
+    description: "Valor promocional sujeto a disponibilidad.",
+  },
 } as const;
 
 export function getSabrosoTicketUrl() {

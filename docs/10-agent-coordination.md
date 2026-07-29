@@ -1,7 +1,7 @@
 # Coordinacion de agentes: Codex y Claude
 
 Fuente: auditoria del plan tecnico y respuesta cruzada de Codex, 29 de julio de 2026.
-Estado: propuesta pendiente de aprobacion de Hugo/Ivo.
+Estado: aprobada por Hugo para el piloto.
 
 Define como trabajan Codex y Claude sobre el ecosistema sin pisarse, y donde entra la
 aprobacion humana.
@@ -10,7 +10,7 @@ aprobacion humana.
 
 - Propiedad separada por repositorio/area. Revision cruzada obligatoria.
 - Ningun agente toma decisiones unilaterales.
-- El humano (Hugo/Ivo) es la unica compuerta de aprobacion, merge, publicacion y produccion.
+- Hugo es la unica compuerta vigente de aprobacion, merge, publicacion y produccion.
 - Ningun agente mergea a `main`.
 
 ## Propiedad
@@ -20,7 +20,7 @@ aprobacion humana.
 | Codex | Social Hub: arquitectura, desarrollo, seguridad, datos propios, UI, CI y publicacion |
 | Claude | Accred: repositorio, contratos Accred e `integrations/accred/` |
 | Ambos | Revision cruzada, sin decisiones unilaterales |
-| Hugo/Ivo | Aprobacion, merge, publicacion y produccion |
+| Hugo | Aprobacion, merge, publicacion y produccion |
 
 Claude puede auditar todo, pero solo modifica el area Accred salvo autorizacion
 especifica. Codex puede auditar Accred, pero solo modifica Social Hub salvo autorizacion
@@ -41,7 +41,7 @@ especifica.
 ## Flujo tipico
 
 ```text
-Hugo/Ivo define tarea y area
+Hugo define tarea y area
   -> El agente dueno del area disena e implementa en su branch
   -> PR
   -> Revision cruzada del otro agente (puede bloquear con justificacion)

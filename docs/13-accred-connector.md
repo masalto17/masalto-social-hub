@@ -2,7 +2,7 @@
 
 Fuente: area Accred (Claude), 29 de julio de 2026. Estado: diseño, no implementacion.
 No se activa para Sabroso. Requiere API partner de Accred (ver docs/12) y aprobacion
-de Hugo/Ivo antes de encenderse.
+de Hugo antes de encenderse.
 
 ## Objetivo
 

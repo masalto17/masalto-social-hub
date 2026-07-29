@@ -1,0 +1,82 @@
+.banner {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1000;
+  width: min(440px, calc(100vw - 36px));
+  padding: 18px;
+  border: 1px solid #3b3b3b;
+  border-radius: 8px;
+  background: #111111;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
+  color: #ffffff;
+}
+
+.banner p {
+  margin: 0;
+  color: #e2e2e2;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.banner a {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.actions button,
+.preferences {
+  min-height: 42px;
+  border: 1px solid #777777;
+  border-radius: 8px;
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.accept {
+  border-color: #e30613 !important;
+  background: #e30613;
+  color: #ffffff;
+}
+
+.reject {
+  background: transparent;
+  color: #ffffff;
+}
+
+.preferences {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  padding: 0;
+  background: #111111;
+  color: #ffffff;
+}
+
+.actions button:focus-visible,
+.preferences:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
