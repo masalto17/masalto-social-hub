@@ -1,0 +1,62 @@
+# MasAlto Social Hub
+
+MasAlto Social Hub es el panel central para planificar, producir, aprobar, publicar y medir campanas sociales de eventos y marcas del ecosistema MasAlto.
+
+El producto debe funcionar de forma independiente, pero puede vincularse por evento con Accred cuando el evento use ticketera, acreditaciones, accesos, invitaciones o cantina dentro del ecosistema.
+
+## Fuente funcional vigente
+
+La fuente principal del proyecto es el documento:
+
+`MasAlto Social Hub - Documento Funcional Maestro del MVP`, version 1.0, fecha 29 de julio de 2026.
+
+Estado del documento: auditado y recortado para el piloto Sabroso. Las integraciones
+futuras requieren decisiones separadas.
+
+## Objetivo del MVP
+
+Crear una PWA operativa para:
+
+- Gestionar campanas por evento o marca.
+- Crear y adaptar contenido para redes sociales.
+- Programar publicaciones multicanal.
+- Automatizar respuestas, leads y sorteos.
+- Publicar eventos en `masalto.com.ar`.
+- Integrarse opcionalmente con Accred por evento.
+- Medir campana, ventas, asistencia y consumos cuando existan datos integrados.
+
+## Principios
+
+- Social Hub no depende de que Accred este funcionando.
+- Accred no queda acoplado a la logica interna de Social Hub.
+- Cada evento define si esta o no vinculado al ecosistema.
+- `masalto.com.ar` debe ser la pagina publica principal cuando un evento se publique oficialmente.
+- Para eventos con Accred, la venta debe sentirse como parte de la misma pagina publica de MasAlto.
+- Los datos compartidos se mueven por APIs, webhooks y contratos versionados.
+
+## Documentos
+
+- [Producto y alcance](docs/01-product-brief.md)
+- [Documento funcional MVP](docs/02-functional-mvp.md)
+- [Arquitectura](docs/03-architecture.md)
+- [Contratos de integracion](docs/04-integration-contracts.md)
+- [Backlog inicial](docs/05-backlog.md)
+- [Decisiones registradas](docs/06-decisions.md)
+- [Backlog tecnico](docs/07-technical-backlog.md)
+- [Modelo de datos MVP](docs/08-data-model.md)
+- [Plan del prototipo](docs/09-prototype-plan.md)
+- [Coordinacion de agentes](docs/10-agent-coordination.md)
+- [Carril piloto Sabroso](docs/11-sabroso-pilot.md)
+- [Accred - readiness de integracion](docs/12-accred-readiness.md)
+- [Conector Accred - diseno](docs/13-accred-connector.md)
+- [Material landing Sabroso (para Codex)](docs/14-sabroso-landing-material.md)
+
+El backlog contempla una futura biblioteca de marcas, plantillas recurrentes y skills
+de validacion visual. Estas funciones no forman parte del carril critico de Sabroso.
+
+## Estado
+
+Base local inicial con documentacion tecnica y prototipo navegable aprobado visualmente.
+
+El primer entregable es la landing estatica de Sabroso. Supabase, analitica, proveedor
+de publicacion y cuentas reales se conectan solo despues de sus puertas de aprobacion.

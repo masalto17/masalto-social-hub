@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Test output
+playwright-report/
+test-results/
+coverage/
+*.tsbuildinfo
+
+# Local environment and platform state
+.env
+.env.*
+!.env.example
+.vercel/
+.netlify/
+
+# Local agent worktrees
+.claude/worktrees/
+
+# Local source retained for the temporary optimized event image
+public/images/sabroso-stage-temporary.png
+public/images/sabroso-stage-temporary.jpg
+public/brand/masalto-producciones.png
+
+# OS and editor files
+.DS_Store
+*.swp
