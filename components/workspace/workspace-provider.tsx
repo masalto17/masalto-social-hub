@@ -13,6 +13,7 @@ import {
   uniqueSlug,
   type ActivityRecord,
   type NewCampaignInput,
+  type NewContentInput,
   type NewEventInput,
   type WorkspaceState,
 } from "@/lib/workspace-model";
@@ -23,6 +24,7 @@ type WorkspaceAction =
   | { type: "hydrate"; state: WorkspaceState }
   | { type: "create_event"; input: NewEventInput }
   | { type: "create_campaign"; input: NewCampaignInput }
+  | { type: "create_content"; input: NewContentInput }
   | { type: "approve_content"; contentId: string }
   | { type: "schedule_content"; contentId: string }
   | { type: "move_task"; taskId: string; scheduledAt: string }
@@ -33,6 +35,7 @@ type WorkspaceContextValue = {
   hydrated: boolean;
   createEvent: (input: NewEventInput) => void;
   createCampaign: (input: NewCampaignInput) => void;
+  createContent: (input: NewContentInput) => void;
   approveContent: (contentId: string) => void;
   scheduleContent: (contentId: string) => boolean;
   moveTask: (taskId: string, scheduledAt: string) => void;
@@ -111,9 +114,49 @@ function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState
         ],
       };
     }
+    case "create_content": {
+      const id = crypto.randomUUID();
+      const content = {
+        campaignId: action.input.campaignId,
+        title: action.input.title,
+        baseCopy: action.input.baseCopy,
+        format: action.input.format,
+        status: action.input.status,
+        id,
+        approvedBy: null,
+        approvedAt: null,
+        createdAt: new Date().toISOString(),
+      };
+      const tasks = action.input.channels.map((channel) => ({
+        id: crypto.randomUUID(),
+        contentId: id,
+        channel,
+        scheduledAt: action.input.scheduledAt,
+        status: action.input.status,
+        provider: "manual" as const,
+      }));
+
+      return {
+        ...state,
+        content: [...state.content, content],
+        publishingTasks: [...state.publishingTasks, ...tasks],
+        activity: [
+          activity(
+            "content",
+            id,
+            "content.created",
+            `${content.title} fue creada para ${tasks.length} canales.`,
+          ),
+          ...state.activity,
+        ],
+      };
+    }
     case "approve_content": {
       const current = state.content.find((item) => item.id === action.contentId);
-      if (!current || current.status === "approved" || current.status === "published") {
+      if (
+        !current ||
+        !["draft", "in_review", "failed"].includes(current.status)
+      ) {
         return state;
       }
 
@@ -222,6 +265,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       hydrated,
       createEvent: (input) => dispatch({ type: "create_event", input }),
       createCampaign: (input) => dispatch({ type: "create_campaign", input }),
+      createContent: (input) => dispatch({ type: "create_content", input }),
       approveContent: (contentId) =>
         dispatch({ type: "approve_content", contentId }),
       scheduleContent: (contentId) => {

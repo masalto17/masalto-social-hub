@@ -115,6 +115,13 @@ export type NewEventInput = Omit<
   "id" | "slug" | "accredEnabled" | "createdAt"
 >;
 export type NewCampaignInput = Omit<CampaignRecord, "id" | "createdAt">;
+export type NewContentInput = Omit<
+  ContentRecord,
+  "id" | "approvedBy" | "approvedAt" | "createdAt"
+> & {
+  channels: SocialChannel[];
+  scheduledAt: string;
+};
 
 export function slugify(value: string) {
   return value
