@@ -8,6 +8,7 @@ import {
   useReducer,
   useState,
 } from "react";
+import { authorizeContentOperation } from "@/app/app/contenido/actions";
 import { demoWorkspace } from "@/lib/demo-workspace";
 import {
   uniqueSlug,
@@ -34,7 +35,12 @@ type WorkspaceAction =
   | { type: "create_campaign_phase"; input: NewCampaignPhaseInput }
   | { type: "create_content"; input: NewContentInput }
   | { type: "import_sales"; input: NewSalesSnapshotInput }
-  | { type: "approve_content"; contentId: string }
+  | {
+      type: "approve_content";
+      contentId: string;
+      approvedBy: string;
+      approvedAt: string;
+    }
   | { type: "schedule_content"; contentId: string }
   | { type: "move_task"; taskId: string; scheduledAt: string }
   | { type: "reset_demo" };
@@ -47,8 +53,8 @@ type WorkspaceContextValue = {
   createCampaignPhase: (input: NewCampaignPhaseInput) => boolean;
   createContent: (input: NewContentInput) => void;
   importSales: (input: NewSalesSnapshotInput) => void;
-  approveContent: (contentId: string) => void;
-  scheduleContent: (contentId: string) => boolean;
+  approveContent: (contentId: string) => Promise<boolean>;
+  scheduleContent: (contentId: string) => Promise<boolean>;
   moveTask: (taskId: string, scheduledAt: string) => void;
   resetDemo: () => void;
 };
@@ -237,8 +243,8 @@ function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState
             ? {
                 ...item,
                 status: "approved",
-                approvedBy: "Hugo",
-                approvedAt: new Date().toISOString(),
+                approvedBy: action.approvedBy,
+                approvedAt: action.approvedAt,
               }
             : item,
         ),
@@ -247,7 +253,7 @@ function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState
             "content",
             action.contentId,
             "content.approved",
-            `${current.title} fue aprobado por Hugo.`,
+            `${current.title} fue aprobado por ${action.approvedBy}.`,
           ),
           ...state.activity,
         ],
@@ -382,14 +388,26 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       },
       createContent: (input) => dispatch({ type: "create_content", input }),
       importSales: (input) => dispatch({ type: "import_sales", input }),
-      approveContent: (contentId) =>
-        dispatch({ type: "approve_content", contentId }),
-      scheduleContent: (contentId) => {
+      approveContent: async (contentId) => {
+        const authorization = await authorizeContentOperation("approve", contentId);
+        if (!authorization.authorized) return false;
+        dispatch({
+          type: "approve_content",
+          contentId,
+          approvedBy: authorization.actor,
+          approvedAt: authorization.authorizedAt,
+        });
+        return true;
+      },
+      scheduleContent: async (contentId) => {
         const canSchedule = state.content.some(
           (item) => item.id === contentId && item.status === "approved",
         );
-        if (canSchedule) dispatch({ type: "schedule_content", contentId });
-        return canSchedule;
+        if (!canSchedule) return false;
+        const authorization = await authorizeContentOperation("schedule", contentId);
+        if (!authorization.authorized) return false;
+        dispatch({ type: "schedule_content", contentId });
+        return true;
       },
       moveTask: (taskId, scheduledAt) =>
         dispatch({ type: "move_task", taskId, scheduledAt }),

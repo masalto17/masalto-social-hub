@@ -1,30 +1,63 @@
 import { expect, test } from "@playwright/test";
 import { getAuthMode } from "@/lib/supabase/auth-mode";
+import {
+  createOwnerSession,
+  hasMatchingOwnerAccessSecret,
+  hasValidOwnerSession,
+} from "@/lib/owner-session";
 
-test("allows prototype mode only outside production", () => {
-  expect(getAuthMode({ VERCEL_ENV: "preview" })).toBe("prototype");
-  expect(getAuthMode({})).toBe("prototype");
+test("blocks every incomplete authentication environment by default", () => {
+  expect(getAuthMode({})).toBe("blocked");
+  expect(getAuthMode({ NODE_ENV: "production" })).toBe("blocked");
+  expect(
+    getAuthMode({ NODE_ENV: "production", ALLOW_PROTOTYPE_AUTH: "true" }),
+  ).toBe("blocked");
 });
 
-test("blocks production when Supabase is missing", () => {
-  expect(getAuthMode({ VERCEL_ENV: "production" })).toBe("blocked");
+test("allows prototype access only when local development opts in explicitly", () => {
+  expect(
+    getAuthMode({ NODE_ENV: "development", ALLOW_PROTOTYPE_AUTH: "true" }),
+  ).toBe("prototype");
 });
 
 test("requires both public Supabase values", () => {
   expect(
     getAuthMode({
-      VERCEL_ENV: "production",
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     }),
   ).toBe("blocked");
 
   expect(
     getAuthMode({
-      VERCEL_ENV: "production",
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_example",
     }),
   ).toBe("configured");
+});
+
+test("uses the one-owner mode when its private secret is configured", () => {
+  expect(getAuthMode({ OWNER_ACCESS_SECRET: "private-owner-secret" })).toBe("owner");
+  expect(
+    getAuthMode({
+      OWNER_ACCESS_SECRET: "private-owner-secret",
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_example",
+    }),
+  ).toBe("owner");
+});
+
+test("creates an expiring signed session only for the configured owner secret", async () => {
+  const secret = "private-owner-secret";
+  const now = Date.UTC(2026, 6, 30, 12, 0, 0);
+  const session = await createOwnerSession(secret, now);
+
+  expect(hasMatchingOwnerAccessSecret(secret, secret)).toBe(true);
+  expect(hasMatchingOwnerAccessSecret("wrong", secret)).toBe(false);
+  await expect(hasValidOwnerSession(session, secret, now)).resolves.toBe(true);
+  await expect(hasValidOwnerSession(session, "wrong-secret", now)).resolves.toBe(false);
+  await expect(hasValidOwnerSession(session, secret, now + 8 * 60 * 60 * 1000)).resolves.toBe(
+    false,
+  );
 });
 
 test("shows a closed login screen before Supabase is configured", async ({

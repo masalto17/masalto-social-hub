@@ -11,12 +11,21 @@ export default function ContentPage() {
   const { state, approveContent, scheduleContent } = useWorkspace();
   const [message, setMessage] = useState<string | null>(null);
 
-  const prepareSchedule = (contentId: string) => {
-    const scheduled = scheduleContent(contentId);
+  const prepareSchedule = async (contentId: string) => {
+    const scheduled = await scheduleContent(contentId);
     setMessage(
       scheduled
         ? "La pieza quedó lista para publicación manual."
         : "Primero debe aprobarse la pieza.",
+    );
+  };
+
+  const approve = async (contentId: string) => {
+    const approved = await approveContent(contentId);
+    setMessage(
+      approved
+        ? "La pieza fue aprobada por el administrador."
+        : "No pudimos validar el permiso de administrador.",
     );
   };
 
@@ -94,7 +103,7 @@ export default function ContentPage() {
                     <button
                       className={styles.iconButton}
                       type="button"
-                      onClick={() => approveContent(content.id)}
+                      onClick={() => void approve(content.id)}
                       aria-label={`Aprobar ${content.title}`}
                       title="Aprobar pieza"
                     >
@@ -105,7 +114,7 @@ export default function ContentPage() {
                     <button
                       className={styles.iconButton}
                       type="button"
-                      onClick={() => prepareSchedule(content.id)}
+                      onClick={() => void prepareSchedule(content.id)}
                       aria-label={`Preparar publicación de ${content.title}`}
                       title="Preparar publicación manual"
                     >

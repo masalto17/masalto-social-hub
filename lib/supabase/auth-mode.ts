@@ -1,10 +1,12 @@
-export type AuthMode = "prototype" | "configured" | "blocked";
+export type AuthMode = "prototype" | "owner" | "configured" | "blocked";
 
-type AuthEnvironment = {
+export type AuthEnvironment = {
   [key: string]: string | undefined;
   NEXT_PUBLIC_SUPABASE_URL?: string;
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
-  VERCEL_ENV?: string;
+  OWNER_ACCESS_SECRET?: string;
+  ALLOW_PROTOTYPE_AUTH?: string;
+  NODE_ENV?: string;
 };
 
 export function getAuthMode(environment: AuthEnvironment = process.env): AuthMode {
@@ -13,8 +15,14 @@ export function getAuthMode(environment: AuthEnvironment = process.env): AuthMod
       environment.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim(),
   );
 
+  if (environment.OWNER_ACCESS_SECRET?.trim()) return "owner";
   if (configured) return "configured";
-  return environment.VERCEL_ENV === "production" ? "blocked" : "prototype";
+
+  const explicitlyLocalPrototype =
+    environment.ALLOW_PROTOTYPE_AUTH === "true" &&
+    environment.NODE_ENV !== "production";
+
+  return explicitlyLocalPrototype ? "prototype" : "blocked";
 }
 
 export function getSupabasePublicConfig(

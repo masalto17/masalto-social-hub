@@ -16,7 +16,9 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { error } = await searchParams;
-  const configured = getAuthMode() === "configured";
+  const authMode = getAuthMode();
+  const ownerAccess = authMode === "owner";
+  const configured = authMode === "configured";
 
   return (
     <main className={styles.page}>
@@ -32,7 +34,30 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <p className={styles.eyebrow}>Social Hub</p>
         <h1>Acceso privado</h1>
 
-        {!configured ? (
+        {ownerAccess ? (
+          <form className={styles.form} action={signIn}>
+            {error ? (
+              <p className={styles.error} role="alert">
+                {error === "missing"
+                  ? "Ingresá la clave de acceso."
+                  : "No pudimos validar esa clave."}
+              </p>
+            ) : null}
+            <div className={styles.field}>
+              <label htmlFor="accessKey">Clave de acceso</label>
+              <input
+                id="accessKey"
+                name="accessKey"
+                type="password"
+                autoComplete="current-password"
+                required
+              />
+            </div>
+            <button className={styles.button} type="submit">
+              Ingresar
+            </button>
+          </form>
+        ) : !configured ? (
           <p className={styles.error}>
             La autenticación todavía no está configurada en este ambiente.
           </p>

@@ -4,11 +4,23 @@ import {
   getAuthMode,
   getSupabasePublicConfig,
 } from "@/lib/supabase/auth-mode";
+import { hasValidOwnerSession, OWNER_SESSION_COOKIE } from "@/lib/owner-session";
 
 export async function proxy(request: NextRequest) {
   const authMode = getAuthMode();
 
   if (authMode === "prototype") {
+    return NextResponse.next();
+  }
+
+  if (authMode === "owner") {
+    const secret = process.env.OWNER_ACCESS_SECRET?.trim();
+    const session = request.cookies.get(OWNER_SESSION_COOKIE)?.value;
+
+    if (!secret || !(await hasValidOwnerSession(session, secret))) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
     return NextResponse.next();
   }
 
