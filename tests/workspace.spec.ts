@@ -1,0 +1,286 @@
+import { expect, test } from "@playwright/test";
+import { demoWorkspace } from "@/lib/demo-workspace";
+
+test("separates the public catalog from the internal workspace", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page).toHaveTitle(/Próximos eventos/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Próximos eventos" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sabroso en San Juan" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Panel" }).click();
+  await expect(page).toHaveURL(/\/app$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Panel de campañas y eventos" }),
+  ).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    /noindex/,
+  );
+});
+
+test("migrates local content tasks without losing their base copy", async ({
+  page,
+}) => {
+  const legacyState: Record<string, unknown> = {
+    ...demoWorkspace,
+    version: 3,
+    publishingTasks: demoWorkspace.publishingTasks.map((task) => {
+      const legacyTask: Record<string, unknown> = { ...task };
+      delete legacyTask.copy;
+      return legacyTask;
+    }),
+  };
+  delete legacyState.campaignPhases;
+  await page.addInitScript((state) => {
+    window.localStorage.setItem(
+      "masalto_social_hub_workspace_v3",
+      JSON.stringify(state),
+    );
+  }, legacyState);
+
+  await page.goto("/app/calendario");
+  await expect(page.getByText("3 tareas de publicación")).toBeVisible();
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = window.localStorage.getItem(
+          "masalto_social_hub_workspace_v4",
+        );
+        return raw ? JSON.parse(raw).version : null;
+      }),
+    )
+    .toBe(4);
+  const migrated = await page.evaluate(() =>
+    JSON.parse(
+      window.localStorage.getItem("masalto_social_hub_workspace_v4") ?? "{}",
+    ),
+  );
+  expect(migrated.version).toBe(4);
+  expect(migrated.publishingTasks).toHaveLength(3);
+  expect(migrated.campaignPhases).toEqual([]);
+  expect(
+    migrated.publishingTasks.every((task: { copy?: string }) => Boolean(task.copy)),
+  ).toBe(true);
+});
+
+test("creates a campaign phase inside the campaign window", async ({ page }) => {
+  await page.goto("/app/campanas/fases/nueva");
+
+  await page.getByLabel("Campaña").selectOption("campaign_sabroso_launch");
+  await page.getByLabel("Tipo").selectOption("custom");
+  await page.getByLabel("Nombre").fill("Recordatorio de preventa");
+  await page
+    .getByLabel("Objetivo de la fase")
+    .fill("Reforzar la promoción antes del tramo de conversión.");
+  await page.getByLabel("Inicio").fill("2026-08-10T09:00");
+  await page.getByLabel("Cierre").fill("2026-08-12T22:00");
+  await page.getByText("WhatsApp", { exact: true }).click();
+  await page.getByRole("button", { name: "Guardar fase" }).click();
+
+  await expect(page).toHaveURL(/\/app\/campanas$/);
+  const phase = page
+    .getByRole("article")
+    .filter({ hasText: "Recordatorio de preventa" });
+  await expect(phase).toContainText("Personalizada");
+  await expect(phase).toContainText("WhatsApp");
+  await expect(phase).toContainText("0 publicaciones");
+
+  await page.reload();
+  await expect(
+    page.getByRole("article").filter({ hasText: "Recordatorio de preventa" }),
+  ).toBeVisible();
+});
+
+test("rejects a campaign phase outside the campaign window", async ({ page }) => {
+  await page.goto("/app/campanas/fases/nueva");
+
+  await page.getByLabel("Nombre").fill("Fase fuera de rango");
+  await page.getByLabel("Objetivo de la fase").fill("No debe guardarse.");
+  await page.getByLabel("Inicio").fill("2026-07-20T09:00");
+  await page.getByLabel("Cierre").fill("2026-07-21T22:00");
+  await page.getByRole("button", { name: "Guardar fase" }).click();
+
+  await expect(
+    page.getByRole("alert").filter({ hasText: "dentro de la campaña" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/campanas\/fases\/nueva$/);
+});
+
+test("creates an independent event without publishing it", async ({ page }) => {
+  await page.goto("/app/eventos/nuevo");
+
+  await page.getByLabel("Nombre público").fill("Festival Demo San Juan");
+  await page.getByLabel("Fecha y hora").fill("2026-09-12T21:30");
+  await page.getByLabel("Capacidad").fill("1200");
+  await page.getByLabel("Lugar").fill("Predio Demo");
+  await page.getByLabel("Ciudad").fill("San Juan");
+  await page.getByLabel("Entradas").selectOption("none");
+  await page.getByRole("button", { name: "Guardar borrador" }).click();
+
+  await expect(page).toHaveURL(/\/app\/eventos$/);
+  const event = page.getByRole("article").filter({ hasText: "Festival Demo San Juan" });
+  await expect(event).toBeVisible();
+  await expect(event).toContainText("Borrador local");
+
+  await page.reload();
+  await expect(
+    page.getByRole("article").filter({ hasText: "Festival Demo San Juan" }),
+  ).toBeVisible();
+});
+
+test("creates a campaign linked to the Sabroso event", async ({ page }) => {
+  await page.goto("/app/campanas/nueva");
+
+  await page.getByLabel("Nombre").fill("Campaña de conversión");
+  await page.getByLabel("Evento asociado").selectOption("event_sabroso_2026");
+  await page.getByLabel("Estado inicial").selectOption("planned");
+  await page.getByLabel("Objetivo").fill("Vender entradas anticipadas");
+  await page
+    .getByLabel("Público")
+    .fill("Personas de 25 a 55 años interesadas en cuarteto.");
+  await page.getByLabel("Concepto creativo").fill("La noche se vive completa");
+  await page.getByLabel("Inicio").fill("2026-08-01T09:00");
+  await page.getByLabel("Cierre").fill("2026-08-28T23:00");
+  await page.getByLabel("Presupuesto estimado (ARS)").fill("500000");
+  await page.getByRole("button", { name: "Guardar campaña" }).click();
+
+  await expect(page).toHaveURL(/\/app\/campanas$/);
+  const campaign = page
+    .getByRole("article")
+    .filter({ hasText: "Campaña de conversión" });
+  await expect(campaign).toContainText("Sabroso en San Juan");
+  await expect(campaign).toContainText("Planificada");
+});
+
+test("rejects a campaign whose closing date is before its start", async ({
+  page,
+}) => {
+  await page.goto("/app/campanas/nueva");
+
+  await page.getByLabel("Nombre").fill("Campaña inválida");
+  await page.getByLabel("Objetivo").fill("Validar fechas");
+  await page.getByLabel("Público").fill("Audiencia de prueba");
+  await page.getByLabel("Concepto creativo").fill("Control temporal");
+  await page.getByLabel("Inicio").fill("2026-08-20T09:00");
+  await page.getByLabel("Cierre").fill("2026-08-19T09:00");
+  await page.getByRole("button", { name: "Guardar campaña" }).click();
+
+  await expect(
+    page.getByText("El cierre debe ser posterior al inicio de la campaña.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/campanas\/nueva$/);
+});
+
+test("requires approval before preparing content for publication", async ({ page }) => {
+  await page.goto("/app/contenido");
+
+  const reel = page.getByRole("article").filter({ hasText: "Reel de clásicos" });
+  await expect(
+    reel.getByRole("button", { name: /Preparar publicación/ }),
+  ).toHaveCount(0);
+
+  await reel.getByRole("button", { name: /Aprobar Reel de clásicos/ }).click();
+  await expect(reel).toContainText("Aprobado");
+
+  await reel.getByRole("button", { name: /Preparar publicación/ }).click();
+  await expect(reel).toContainText("Programado");
+});
+
+test("creates one content item with tasks for selected channels", async ({
+  page,
+}) => {
+  await page.goto("/app/contenido/nuevo");
+
+  await page.getByLabel("Campaña").selectOption("campaign_sabroso_launch");
+  await page.getByLabel("Estado inicial").selectOption("in_review");
+  await page.getByLabel("Título interno").fill("Cuenta regresiva 10 días");
+  await page
+    .getByLabel("Copy base")
+    .fill("Faltan diez días para vivir la noche completa de Sabroso.");
+  await page.getByLabel("Formato maestro").selectOption("Historia / Reel 9:16");
+  await page.getByLabel("Fecha prevista").fill("2026-08-18T20:00");
+  await page.getByText("Facebook", { exact: true }).click();
+  await page
+    .getByLabel("Copy para Facebook (opcional)")
+    .fill("Faltan diez días. Facebook ya está del lado correcto de la noche.");
+  await page.getByRole("button", { name: "Guardar pieza" }).click();
+
+  await expect(page).toHaveURL(/\/app\/contenido$/);
+  const content = page
+    .getByRole("article")
+    .filter({ hasText: "Cuenta regresiva 10 días" });
+  await expect(content).toContainText("En revisión");
+
+  await content
+    .getByRole("button", { name: "Aprobar Cuenta regresiva 10 días" })
+    .click();
+  await content
+    .getByRole("button", {
+      name: "Preparar publicación de Cuenta regresiva 10 días",
+    })
+    .click();
+
+  await page.goto("/app/calendario");
+  const tasks = page
+    .getByRole("article")
+    .filter({ hasText: "Cuenta regresiva 10 días" });
+  await expect(tasks).toHaveCount(2);
+  await expect(tasks.filter({ hasText: "Instagram" })).toBeVisible();
+  await expect(tasks.filter({ hasText: "Facebook" })).toBeVisible();
+  await expect(tasks.first()).toContainText("Programado");
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Exportar CSV" }).click();
+  const download = await downloadPromise;
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  expect(Buffer.concat(chunks).toString("utf8")).toContain(
+    "Facebook ya está del lado correcto de la noche.",
+  );
+});
+
+test("reschedules a publishing task and records the new date", async ({ page }) => {
+  await page.goto("/app/calendario");
+
+  const task = page.locator('[data-task-id="task_sabroso_instagram"]');
+  const before = await task.getByRole("time").getAttribute("datetime");
+  await task.getByRole("button", { name: /Mover Anuncio oficial un día/ }).click();
+  const after = await task.getByRole("time").getAttribute("datetime");
+
+  expect(before).toBeTruthy();
+  expect(after).toBeTruthy();
+  expect(new Date(after!).getTime() - new Date(before!).getTime()).toBe(86_400_000);
+
+  await page.goto("/app");
+  await expect(page.getByText(/Publicación reprogramada/)).toBeVisible();
+});
+
+test("downloads the editorial plan without publishing content", async ({ page }) => {
+  await page.goto("/app/calendario");
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Exportar CSV" }).click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toMatch(
+    /^plan-publicaciones-\d{4}-\d{2}-\d{2}\.csv$/,
+  );
+  const content = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of content) {
+    chunks.push(Buffer.from(chunk));
+  }
+  const csv = Buffer.concat(chunks).toString("utf8");
+
+  expect(csv).toContain('"Fecha programada";"Canal"');
+  await expect(
+    page.getByText("Plan editorial exportado. La descarga no publica contenido."),
+  ).toBeVisible();
+});

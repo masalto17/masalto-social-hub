@@ -87,6 +87,10 @@ button {
   gap: 6px;
 }
 
+.logout-form {
+  margin-top: 16px;
+}
+
 .nav-item {
   display: flex;
   align-items: center;
@@ -100,6 +104,11 @@ button {
   color: #d7d7d7;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
+}
+
+button.nav-item {
+  font: inherit;
 }
 
 .nav-item.active,
@@ -322,6 +331,34 @@ button {
   font-size: 13px;
 }
 
+.coverage-alert {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  border-left: 3px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 16px;
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.coverage-alert div {
+  display: grid;
+  gap: 3px;
+}
+
+.coverage-alert span {
+  color: #6b4918;
+  font-size: 13px;
+}
+
+.coverage-alert a {
+  color: inherit;
+  font-weight: 800;
+}
+
 .content-grid {
   grid-template-columns: 1.25fr 0.75fr;
 }
@@ -491,6 +528,14 @@ button {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .coverage-alert {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .coverage-alert a {
+    grid-column: 2;
   }
 
   .nav-list {

@@ -120,3 +120,15 @@ embudo de compra informado por EntradaWeb.
 Decision: por ahora Hugo es el unico aprobador de cambios, merges, publicaciones,
 credenciales, despliegues y produccion. Otros usuarios se incorporaran mediante una
 decision posterior.
+
+## Portabilidad PostgreSQL y Supabase
+
+Decision: continuar con PostgreSQL, migraciones SQL y RLS estandar de Supabase. El
+mismo nucleo debe ejecutarse en Supabase administrado o self-host sin modificar el
+modelo ni las migraciones.
+
+Se acepta como frontera comun `auth.users`, `auth.uid()`, los roles `anon` y
+`authenticated`, y las APIs estandar disponibles en ambas modalidades. No se
+incorporan Vault, Edge Functions indispensables, Realtime, Storage obligatorio,
+extensiones administradas ni jobs o HTTP desde PostgreSQL sin una decision posterior
+aprobada por Hugo.
