@@ -1,7 +1,12 @@
 "use client";
 
-import { CalendarClock, ChevronRight } from "lucide-react";
+import { CalendarClock, ChevronRight, Download } from "lucide-react";
+import { useState } from "react";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
+import {
+  buildPublicationCsv,
+  publicationExportFilename,
+} from "@/lib/publication-export";
 import { formatStatus } from "@/lib/workspace-model";
 import styles from "../workspace.module.css";
 
@@ -13,9 +18,23 @@ function addDay(value: string) {
 
 export default function CalendarPage() {
   const { state, moveTask } = useWorkspace();
+  const [message, setMessage] = useState("");
   const tasks = [...state.publishingTasks].sort((a, b) =>
     a.scheduledAt.localeCompare(b.scheduledAt),
   );
+
+  const exportPlan = () => {
+    const blob = new Blob([buildPublicationCsv(state)], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = publicationExportFilename();
+    link.click();
+    URL.revokeObjectURL(url);
+    setMessage("Plan editorial exportado. La descarga no publica contenido.");
+  };
 
   return (
     <>
@@ -24,12 +43,22 @@ export default function CalendarPage() {
           <p className={styles.eyebrow}>Programación</p>
           <h1>Calendario editorial</h1>
         </div>
+        <button
+          className={styles.button}
+          type="button"
+          onClick={exportPlan}
+          disabled={tasks.length === 0}
+        >
+          <Download aria-hidden="true" size={18} />
+          Exportar CSV
+        </button>
       </header>
 
       <p className={styles.notice}>
         Vista operativa semanal del prototipo. Mover una fecha registra la acción, pero
         no modifica publicaciones en redes externas.
       </p>
+      {message ? <p className={styles.notice}>{message}</p> : null}
 
       <section className={styles.wideCard}>
         <div className={styles.cardHeader}>
