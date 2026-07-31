@@ -8,6 +8,7 @@ import {
   Inbox,
   LogOut,
   Megaphone,
+  ReceiptText,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/app/campanas", label: "Campañas", icon: Megaphone },
   { href: "/app/contenido", label: "Contenido", icon: FileImage },
   { href: "/app/calendario", label: "Calendario", icon: CalendarDays },
+  { href: "/app/ventas", label: "Ventas", icon: ReceiptText },
   { href: "/app/inbox", label: "Inbox", icon: Inbox },
   { href: "/", label: "Web pública", icon: Globe2 },
 ];

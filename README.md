@@ -57,6 +57,7 @@ Crear una PWA operativa para:
 - [Accred - worklist para sesion dedicada](docs/19-accred-worklist.md)
 - [Base segura de Supabase](docs/20-supabase-foundation.md)
 - [Base de autenticacion](docs/21-auth-foundation.md)
+- [Importacion agregada de EntradaWeb](docs/22-entradaweb-import.md)
 
 El backlog contempla una futura biblioteca de marcas, plantillas recurrentes y skills
 de validacion visual. Estas funciones no forman parte del carril critico de Sabroso.

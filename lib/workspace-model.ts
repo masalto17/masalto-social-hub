@@ -93,7 +93,12 @@ export type PublishingTaskRecord = {
 
 export type ActivityRecord = {
   id: string;
-  entityType: "event" | "campaign" | "content" | "publishing_task";
+  entityType:
+    | "event"
+    | "campaign"
+    | "content"
+    | "publishing_task"
+    | "sales_import";
   entityId: string;
   action: string;
   summary: string;
@@ -101,12 +106,26 @@ export type ActivityRecord = {
   createdAt: string;
 };
 
+export type SalesSnapshotRecord = {
+  id: string;
+  eventId: string;
+  source: "entradaweb";
+  buyerRows: number;
+  totalTickets: number;
+  rejectedRows: number;
+  byDevice: Record<string, number>;
+  byProvince: Record<string, number>;
+  byLocality: Record<string, number>;
+  importedAt: string;
+};
+
 export type WorkspaceState = {
-  version: 1;
+  version: 2;
   events: EventRecord[];
   campaigns: CampaignRecord[];
   content: ContentRecord[];
   publishingTasks: PublishingTaskRecord[];
+  salesSnapshots: SalesSnapshotRecord[];
   activity: ActivityRecord[];
 };
 
@@ -122,6 +141,10 @@ export type NewContentInput = Omit<
   channels: SocialChannel[];
   scheduledAt: string;
 };
+export type NewSalesSnapshotInput = Omit<
+  SalesSnapshotRecord,
+  "id" | "source" | "importedAt"
+>;
 
 export function slugify(value: string) {
   return value

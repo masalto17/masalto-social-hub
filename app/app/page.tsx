@@ -20,6 +20,9 @@ export default function DashboardPage() {
   const { state, hydrated } = useWorkspace();
   const event = state.events[0];
   const campaign = state.campaigns.find((item) => item.eventId === event?.id);
+  const latestSales = [...state.salesSnapshots]
+    .filter((snapshot) => snapshot.eventId === event?.id)
+    .sort((a, b) => b.importedAt.localeCompare(a.importedAt))[0];
   const upcomingTasks = [...state.publishingTasks]
     .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))
     .slice(0, 4);
@@ -229,7 +232,11 @@ export default function DashboardPage() {
             </div>
             <div>
               <span>Ventas</span>
-              <strong>EntradaWeb</strong>
+              <strong>
+                {latestSales
+                  ? `${latestSales.totalTickets} entradas`
+                  : "EntradaWeb"}
+              </strong>
             </div>
           </div>
         </div>
