@@ -227,6 +227,43 @@
   line-height: 1.4;
 }
 
+.fieldWide {
+  min-width: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.fieldWide legend {
+  margin-bottom: 10px;
+  color: #3f3f3f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: #e30613;
+}
+
 .formFooter {
   display: flex;
   justify-content: flex-end;
@@ -273,7 +310,8 @@
 
 @media (max-width: 900px) {
   .grid,
-  .formGrid {
+  .formGrid,
+  .checkboxGrid {
     grid-template-columns: 1fr;
   }
 

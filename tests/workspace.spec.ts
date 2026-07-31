@@ -102,6 +102,47 @@ test("requires approval before preparing content for publication", async ({ page
   await expect(reel).toContainText("Programado");
 });
 
+test("creates one content item with tasks for selected channels", async ({
+  page,
+}) => {
+  await page.goto("/app/contenido/nuevo");
+
+  await page.getByLabel("Campaña").selectOption("campaign_sabroso_launch");
+  await page.getByLabel("Estado inicial").selectOption("in_review");
+  await page.getByLabel("Título interno").fill("Cuenta regresiva 10 días");
+  await page
+    .getByLabel("Copy base")
+    .fill("Faltan diez días para vivir la noche completa de Sabroso.");
+  await page.getByLabel("Formato maestro").selectOption("Historia / Reel 9:16");
+  await page.getByLabel("Fecha prevista").fill("2026-08-18T20:00");
+  await page.getByText("Facebook", { exact: true }).click();
+  await page.getByRole("button", { name: "Guardar pieza" }).click();
+
+  await expect(page).toHaveURL(/\/app\/contenido$/);
+  const content = page
+    .getByRole("article")
+    .filter({ hasText: "Cuenta regresiva 10 días" });
+  await expect(content).toContainText("En revisión");
+
+  await content
+    .getByRole("button", { name: "Aprobar Cuenta regresiva 10 días" })
+    .click();
+  await content
+    .getByRole("button", {
+      name: "Preparar publicación de Cuenta regresiva 10 días",
+    })
+    .click();
+
+  await page.goto("/app/calendario");
+  const tasks = page
+    .getByRole("article")
+    .filter({ hasText: "Cuenta regresiva 10 días" });
+  await expect(tasks).toHaveCount(2);
+  await expect(tasks.filter({ hasText: "Instagram" })).toBeVisible();
+  await expect(tasks.filter({ hasText: "Facebook" })).toBeVisible();
+  await expect(tasks.first()).toContainText("Programado");
+});
+
 test("reschedules a publishing task and records the new date", async ({ page }) => {
   await page.goto("/app/calendario");
 

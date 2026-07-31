@@ -1,6 +1,7 @@
 "use client";
 
-import { BadgeCheck, CalendarClock, FileImage } from "lucide-react";
+import { BadgeCheck, CalendarClock, FileImage, Plus } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useWorkspace } from "@/components/workspace/workspace-provider";
 import { formatStatus } from "@/lib/workspace-model";
@@ -26,6 +27,10 @@ export default function ContentPage() {
           <p className={styles.eyebrow}>Biblioteca</p>
           <h1>Contenido y aprobaciones</h1>
         </div>
+        <Link className={styles.button} href="/app/contenido/nuevo">
+          <Plus aria-hidden="true" size={18} />
+          Nueva pieza
+        </Link>
       </header>
 
       <p className={styles.notice}>
