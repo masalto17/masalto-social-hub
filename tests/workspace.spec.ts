@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { demoWorkspace } from "@/lib/demo-workspace";
 
 test("separates the public catalog from the internal workspace", async ({ page }) => {
   await page.goto("/");
@@ -18,6 +19,50 @@ test("separates the public catalog from the internal workspace", async ({ page }
     "content",
     /noindex/,
   );
+});
+
+test("migrates local content tasks without losing their base copy", async ({
+  page,
+}) => {
+  const legacyState = {
+    ...demoWorkspace,
+    version: 2,
+    publishingTasks: demoWorkspace.publishingTasks.map((task) => {
+      const legacyTask: Record<string, unknown> = { ...task };
+      delete legacyTask.copy;
+      return legacyTask;
+    }),
+  };
+  await page.addInitScript((state) => {
+    window.localStorage.setItem(
+      "masalto_social_hub_workspace_v2",
+      JSON.stringify(state),
+    );
+  }, legacyState);
+
+  await page.goto("/app/calendario");
+  await expect(page.getByText("3 tareas de publicación")).toBeVisible();
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = window.localStorage.getItem(
+          "masalto_social_hub_workspace_v3",
+        );
+        return raw ? JSON.parse(raw).version : null;
+      }),
+    )
+    .toBe(3);
+  const migrated = await page.evaluate(() =>
+    JSON.parse(
+      window.localStorage.getItem("masalto_social_hub_workspace_v3") ?? "{}",
+    ),
+  );
+  expect(migrated.version).toBe(3);
+  expect(migrated.publishingTasks).toHaveLength(3);
+  expect(
+    migrated.publishingTasks.every((task: { copy?: string }) => Boolean(task.copy)),
+  ).toBe(true);
 });
 
 test("creates an independent event without publishing it", async ({ page }) => {
@@ -116,6 +161,9 @@ test("creates one content item with tasks for selected channels", async ({
   await page.getByLabel("Formato maestro").selectOption("Historia / Reel 9:16");
   await page.getByLabel("Fecha prevista").fill("2026-08-18T20:00");
   await page.getByText("Facebook", { exact: true }).click();
+  await page
+    .getByLabel("Copy para Facebook (opcional)")
+    .fill("Faltan diez días. Facebook ya está del lado correcto de la noche.");
   await page.getByRole("button", { name: "Guardar pieza" }).click();
 
   await expect(page).toHaveURL(/\/app\/contenido$/);
@@ -141,6 +189,16 @@ test("creates one content item with tasks for selected channels", async ({
   await expect(tasks.filter({ hasText: "Instagram" })).toBeVisible();
   await expect(tasks.filter({ hasText: "Facebook" })).toBeVisible();
   await expect(tasks.first()).toContainText("Programado");
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Exportar CSV" }).click();
+  const download = await downloadPromise;
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  expect(Buffer.concat(chunks).toString("utf8")).toContain(
+    "Facebook ya está del lado correcto de la noche.",
+  );
 });
 
 test("reschedules a publishing task and records the new date", async ({ page }) => {

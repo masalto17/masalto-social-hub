@@ -60,6 +60,12 @@ export default function ContentPage() {
             const approved = ["approved", "scheduled", "published"].includes(
               content.status,
             );
+            const tasks = state.publishingTasks.filter(
+              (task) => task.contentId === content.id,
+            );
+            const variantCount = tasks.filter(
+              (task) => task.copy !== content.baseCopy,
+            ).length;
 
             return (
               <article className={styles.row} key={content.id}>
@@ -67,6 +73,9 @@ export default function ContentPage() {
                   <strong>{content.title}</strong>
                   <span className={styles.muted}>{campaign?.name}</span>
                   <span className={styles.muted}>{content.format}</span>
+                  <span className={styles.muted}>
+                    {tasks.length} canales · {variantCount} variantes
+                  </span>
                 </div>
                 <span
                   className={`${styles.badge} ${

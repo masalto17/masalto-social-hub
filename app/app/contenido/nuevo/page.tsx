@@ -26,6 +26,9 @@ export default function NewContentPage() {
   const [selectedChannels, setSelectedChannels] = useState<SocialChannel[]>([
     "instagram",
   ]);
+  const [channelCopies, setChannelCopies] = useState<
+    Partial<Record<SocialChannel, string>>
+  >({});
   const [error, setError] = useState("");
 
   const toggleChannel = (channel: SocialChannel) => {
@@ -52,6 +55,7 @@ export default function NewContentPage() {
       format: String(form.get("format")),
       status: String(form.get("status")) as ContentStatus,
       channels: selectedChannels,
+      channelCopies,
       scheduledAt: new Date(String(form.get("scheduledAt"))).toISOString(),
     });
     router.push("/app/contenido");
@@ -157,6 +161,34 @@ export default function NewContentPage() {
                     <span>{channel.label}</span>
                   </label>
                 ))}
+              </div>
+            </fieldset>
+
+            <fieldset className={styles.fieldWide}>
+              <legend>Variantes de copy por canal</legend>
+              <div className={styles.variantGrid}>
+                {selectedChannels.map((channel) => {
+                  const label = channels.find((item) => item.value === channel)?.label;
+                  return (
+                    <div className={styles.field} key={channel}>
+                      <label htmlFor={`copy-${channel}`}>
+                        Copy para {label} (opcional)
+                      </label>
+                      <textarea
+                        id={`copy-${channel}`}
+                        value={channelCopies[channel] ?? ""}
+                        maxLength={2200}
+                        placeholder="Si queda vacío, se usará el copy base."
+                        onChange={(event) =>
+                          setChannelCopies((current) => ({
+                            ...current,
+                            [channel]: event.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </fieldset>
           </div>

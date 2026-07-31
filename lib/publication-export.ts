@@ -35,7 +35,7 @@ export function buildPublicationCsv(state: WorkspaceState) {
         campaign?.name ?? "",
         content?.title ?? "",
         content?.format ?? "",
-        content?.baseCopy ?? "",
+        task.copy,
       ];
     });
 

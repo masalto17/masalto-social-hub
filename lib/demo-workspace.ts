@@ -1,7 +1,7 @@
 import type { WorkspaceState } from "@/lib/workspace-model";
 
 export const demoWorkspace: WorkspaceState = {
-  version: 2,
+  version: 3,
   events: [
     {
       id: "event_sabroso_2026",
@@ -76,6 +76,7 @@ export const demoWorkspace: WorkspaceState = {
       id: "task_sabroso_instagram",
       contentId: "content_sabroso_announcement",
       channel: "instagram",
+      copy: "Sabroso llega a San Juan. Del lado correcto de la noche.",
       scheduledAt: "2026-07-31T20:00:00-03:00",
       status: "scheduled",
       provider: "manual",
@@ -84,6 +85,7 @@ export const demoWorkspace: WorkspaceState = {
       id: "task_sabroso_facebook",
       contentId: "content_sabroso_announcement",
       channel: "facebook",
+      copy: "Sabroso llega a San Juan. Del lado correcto de la noche.",
       scheduledAt: "2026-07-31T20:05:00-03:00",
       status: "scheduled",
       provider: "manual",
@@ -92,6 +94,7 @@ export const demoWorkspace: WorkspaceState = {
       id: "task_sabroso_reel",
       contentId: "content_sabroso_reel",
       channel: "tiktok",
+      copy: "Una canción. Una historia. Una noche completa de Sabroso.",
       scheduledAt: "2026-08-04T20:30:00-03:00",
       status: "in_review",
       provider: "manual",
