@@ -74,5 +74,12 @@ calendario con persistencia local. La base Supabase y sus políticas RLS están
 preparadas en una rama separada, pero todavía no fueron aplicadas a un proyecto remoto.
 
 El primer entregable es la landing estatica de Sabroso. Meta Pixel y GA4 estan
-preparados pero apagados; Supabase, proveedor de publicacion y cuentas reales se
-conectan solo despues de sus puertas de aprobacion.
+preparados pero apagados; proveedor de publicacion y cuentas reales se conectan solo
+despues de sus puertas de aprobacion.
+
+## Variables del carril Sabroso
+
+- `NEXT_PUBLIC_SABROSO_TICKET_URL`: enlace final de Entradaweb provisto por Hugo. La app agrega UTM.
+- `NEXT_PUBLIC_ANALYTICS_ENABLED`: mantener en `false` hasta aprobar privacidad y activacion.
+- `NEXT_PUBLIC_META_PIXEL_ID`: vacia hasta aprobar politica de privacidad y activacion.
+- `NEXT_PUBLIC_GA4_MEASUREMENT_ID`: vacia hasta aprobar politica de privacidad y activacion.

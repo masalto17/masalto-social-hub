@@ -22,7 +22,7 @@ test("exposes the Entradaweb CTA with campaign attribution", async ({ page }) =>
 
   const ticketUrl = new URL(href!);
   expect(ticketUrl.hostname).toBe("www.entradaweb.com.ar");
-  expect(ticketUrl.pathname).toBe("/hugo_de_bernardo");
+  expect(ticketUrl.pathname).toBe("/evento/sabroso-test/step/1");
   expect(ticketUrl.searchParams.get("utm_source")).toBe("masalto");
   expect(ticketUrl.searchParams.get("utm_medium")).toBe("event_page");
   expect(ticketUrl.searchParams.get("utm_campaign")).toBe("sabroso_2026");
@@ -49,6 +49,7 @@ test("keeps optional analytics disabled without production configuration", async
 
   await expect(page.locator("#meta-pixel")).toHaveCount(0);
   await expect(page.locator("#ga4")).toHaveCount(0);
+  await expect(page.locator('script[src*="googletagmanager.com"]')).toHaveCount(0);
   await expect(page.getByLabel("Preferencias de privacidad")).toHaveCount(0);
 });
 

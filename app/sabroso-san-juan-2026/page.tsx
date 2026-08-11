@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Sabroso en San Juan | 28 de agosto de 2026",
   description: sabrosoEvent.description,
   alternates: {
-    canonical: sabrosoEvent.path,
+    canonical: publicUrl,
   },
   openGraph: {
     type: "website",
@@ -93,6 +93,7 @@ export default function SabrosoEventPage() {
       price: sabrosoEvent.offer.price,
       priceCurrency: sabrosoEvent.offer.priceCurrency,
       description: `${sabrosoEvent.offer.label}. ${sabrosoEvent.offer.description}`,
+      validFrom: sabrosoEvent.offer.validFrom,
     },
   };
 

@@ -6,7 +6,9 @@ export default defineConfig([
   ...nextVitals,
   ...nextTypeScript,
   globalIgnores([
+    ".claude/**",
     ".next/**",
+    ".vercel/**",
     "node_modules/**",
     "playwright-report/**",
     "test-results/**",

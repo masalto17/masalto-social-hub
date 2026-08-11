@@ -8,11 +8,12 @@ Convenciones reutilizadas de docs/11-sabroso-pilot.md:
 - UTM: `utm_source=masalto`, `utm_medium=event_page`, `utm_campaign=sabroso_2026`.
 - Landing: `https://eventos.masalto.com.ar/sabroso-san-juan-2026`.
 
-Datos del evento (docs/09):
+Datos del evento (docs/09 + decision confirmada):
 - Nombre: Sabroso en San Juan
 - Inicio: 2026-08-28T23:00:00-03:00
 - Venue: Hugo Espectaculos, San Juan
 - Estado venta: preventa
+- Precio: primeras 500 anticipadas a ARS 15.000
 
 ## 1. Helper de URL de entradas con UTM
 
@@ -81,6 +82,7 @@ export function SabrosoJsonLd() {
       availability: "https://schema.org/InStock", // preventa
       priceCurrency: "ARS",
       price: 15000,
+      validFrom: "2026-07-29T00:00:00-03:00",
     },
     organizer: {
       "@type": "Organization",
@@ -100,23 +102,24 @@ export function SabrosoJsonLd() {
 Precio confirmado por Hugo el 29 de julio de 2026: primeras 500 anticipadas a ARS
 15.000. El JSON-LD integrado publica `price: 15000` y `priceCurrency: "ARS"`.
 
-## 4. Medicion (Umami, candidato - sujeto a decision)
+## 4. Medicion (GA4 + Meta, apagado por defecto)
 
-CTA con evento nombrado. Umami usa `data-umami-event`:
+La landing puede montar analitica con `NEXT_PUBLIC_GA4_MEASUREMENT_ID` y
+`NEXT_PUBLIC_META_PIXEL_ID`, pero requiere ademas `NEXT_PUBLIC_ANALYTICS_ENABLED=true`.
+El interruptor queda en `false` y los IDs vacios hasta aprobar politica de privacidad y
+activacion. El CTA mantiene un atributo de evento estable:
 
 ```tsx
 <a
   href={buildTicketUrl()}
-  data-umami-event="click_comprar"
+  data-analytics-event="click_comprar"
   rel="noopener"
 >
   Comprar entradas
 </a>
 ```
 
-Evento de vista de pagina `ver_evento`: si Umami ya trackea pageviews, no duplicar.
-Solo agregar eventos custom para acciones (click_comprar). No cargar el script de Umami
-hasta que la decision de analitica este aprobada (docs/06).
+No cargar scripts de medicion hasta que la decision de analitica este aprobada (docs/06).
 
 ## 5. Smoke test (Playwright) para CI
 

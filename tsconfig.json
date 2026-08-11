@@ -36,6 +36,8 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
+    ".claude",
+    ".vercel",
     "node_modules"
   ]
 }
