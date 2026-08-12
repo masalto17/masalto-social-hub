@@ -23,13 +23,14 @@ no existe registro publico.
 
 ## Pendiente para activar
 
-1. Crear el proyecto Supabase separado.
-2. Aplicar la migracion despues de revisar CI.
+1. Confirmar que la organizacion del proyecto dedicado esta en Supabase Pro.
+2. Aplicar las migraciones despues de revisar CI.
 3. Crear la organizacion MasAlto y el primer miembro administrador mediante un
    procedimiento de bootstrap de servidor.
 4. Invitar exclusivamente a Hugo.
 5. Cargar URL y clave publicable en Vercel.
 6. Validar inicio y cierre de sesion en preview.
-7. Reemplazar la persistencia local por consultas protegidas con RLS.
+7. Validar la migracion unica desde localStorage, lectura, escritura y aislamiento
+   entre identidades en preview.
 
 No conectar el dominio publico al panel mientras el paso 7 este pendiente.

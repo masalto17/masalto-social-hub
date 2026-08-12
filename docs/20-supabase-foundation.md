@@ -1,22 +1,22 @@
 # Base segura de Supabase
 
-Estado: preparada en codigo, no aplicada a ningun proyecto remoto.
+Estado: proyecto remoto verificado; migraciones preparadas en codigo y aun no
+aplicadas.
 
 ## Bloqueo actual
 
-La organizacion Supabase disponible ya tiene dos proyectos activos en el plan
-gratuito: Accred y Handy. La creacion de `MasAlto Social Hub` fue rechazada por la
-plataforma. Ninguno de esos proyectos se reutiliza, pausa o modifica.
+El proyecto dedicado `wstvibvkrmhmzjotjqhx` existe y esta vacio: no tiene tablas ni
+migraciones remotas. La organizacion `MasAlto` continua en plan gratuito al
+2026-08-11; por lo tanto no se aplican migraciones ni se activa persistencia remota
+hasta que Hugo confirme el cambio a Pro.
 
 Para destrabar el backend remoto se necesita una decision de Hugo:
 
-1. Cambiar la organizacion Supabase a un plan que permita el proyecto adicional.
-2. Crear otra organizacion/cuenta separada para Social Hub.
-3. Aprobar una infraestructura self-hosted con operacion, backups y monitoreo propios.
+1. Confirmar Supabase Pro para la organizacion `MasAlto`.
+2. Aplicar las migraciones versionadas al proyecto dedicado.
+3. Ejecutar el bootstrap del primer administrador y validar RLS con dos identidades.
 
-La opcion recomendada para el MVP es mantener Supabase administrado y habilitar un
-proyecto separado en Sao Paulo. Antes de aceptar un plan pago se debe mostrar el
-precio final del panel y obtener aprobacion expresa.
+La opcion aprobada para el MVP es Supabase administrado con este proyecto separado.
 
 ## Alcance de esta migracion
 

@@ -151,6 +151,17 @@ export type WorkspaceState = {
   activity: ActivityRecord[];
 };
 
+export const emptyWorkspace: WorkspaceState = {
+  version: 4,
+  events: [],
+  campaigns: [],
+  campaignPhases: [],
+  content: [],
+  publishingTasks: [],
+  salesSnapshots: [],
+  activity: [],
+};
+
 export type NewEventInput = Omit<
   EventRecord,
   "id" | "slug" | "accredEnabled" | "createdAt"
