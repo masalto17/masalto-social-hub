@@ -35,7 +35,7 @@ test("requires both public Supabase values", () => {
   ).toBe("configured");
 });
 
-test("uses the one-owner mode when its private secret is configured", () => {
+test("uses the one-owner mode only as a fallback before Supabase is configured", () => {
   expect(getAuthMode({ OWNER_ACCESS_SECRET: "private-owner-secret" })).toBe("owner");
   expect(
     getAuthMode({
@@ -43,7 +43,7 @@ test("uses the one-owner mode when its private secret is configured", () => {
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_example",
     }),
-  ).toBe("owner");
+  ).toBe("configured");
 });
 
 test("creates an expiring signed session only for the configured owner secret", async () => {
