@@ -1,5 +1,3 @@
-const DEFAULT_TICKET_URL = "https://www.entradaweb.com.ar/hugo_de_bernardo";
-
 export const sabrosoEvent = {
   name: "Sabroso en San Juan",
   headline: "Sabroso",
@@ -23,13 +21,24 @@ export const sabrosoEvent = {
     priceCurrency: "ARS",
     label: "Primeras 500 anticipadas",
     description: "Valor promocional sujeto a disponibilidad.",
+    validFrom: "2026-07-29T00:00:00-03:00",
   },
 } as const;
 
 export function getSabrosoTicketUrl() {
-  const configuredUrl =
-    process.env.NEXT_PUBLIC_SABROSO_TICKET_URL?.trim() || DEFAULT_TICKET_URL;
-  const url = new URL(configuredUrl);
+  const configuredUrl = process.env.NEXT_PUBLIC_SABROSO_TICKET_URL?.trim();
+
+  if (!configuredUrl) {
+    return "#";
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(configuredUrl);
+  } catch {
+    return "#";
+  }
 
   url.searchParams.set("utm_source", "masalto");
   url.searchParams.set("utm_medium", "event_page");
