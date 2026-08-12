@@ -20,7 +20,7 @@ export default function InternalAppLayout({
   const authConfigured = getAuthMode() === "configured";
 
   return (
-    <WorkspaceProvider>
+    <WorkspaceProvider useSupabase={authConfigured}>
       <AppShell authConfigured={authConfigured}>{children}</AppShell>
     </WorkspaceProvider>
   );

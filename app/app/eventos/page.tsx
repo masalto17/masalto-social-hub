@@ -7,7 +7,7 @@ import { formatStatus } from "@/lib/workspace-model";
 import styles from "../workspace.module.css";
 
 export default function EventsPage() {
-  const { state, resetDemo } = useWorkspace();
+  const { state, resetDemo, persistence } = useWorkspace();
 
   return (
     <>
@@ -17,10 +17,12 @@ export default function EventsPage() {
           <h1>Eventos</h1>
         </div>
         <div className={styles.actions}>
-          <button className={styles.buttonSecondary} type="button" onClick={resetDemo}>
-            <RotateCcw aria-hidden="true" size={17} />
-            Restaurar demo
-          </button>
+          {persistence === "local" ? (
+            <button className={styles.buttonSecondary} type="button" onClick={resetDemo}>
+              <RotateCcw aria-hidden="true" size={17} />
+              Restaurar demo
+            </button>
+          ) : null}
           <Link className={styles.button} href="/app/eventos/nuevo">
             <CalendarPlus aria-hidden="true" size={18} />
             Nuevo evento
@@ -29,8 +31,9 @@ export default function EventsPage() {
       </header>
 
       <p className={styles.notice}>
-        Estos datos se guardan solamente en este navegador. Los eventos nuevos no se
-        publican en la web oficial hasta conectar Supabase y aprobarlos.
+        {persistence === "supabase"
+          ? "Los datos se guardan en el workspace privado. Crear un evento no lo publica en la web oficial."
+          : "Estos datos se guardan solamente en este navegador. Los eventos nuevos no se publican en la web oficial hasta conectar Supabase y aprobarlos."}
       </p>
 
       <section className={styles.wideCard}>
@@ -71,7 +74,7 @@ export default function EventsPage() {
                 <span className={styles.badge}>{formatStatus(event.saleStatus)}</span>
                 <div className={styles.muted}>{formatStatus(event.ecosystemMode)}</div>
               </div>
-              {event.id === "event_sabroso_2026" ? (
+              {event.slug === "sabroso-san-juan-2026" ? (
                 <Link
                   className={styles.iconButton}
                   href={`/${event.slug}`}
@@ -81,7 +84,9 @@ export default function EventsPage() {
                   <ExternalLink aria-hidden="true" size={18} />
                 </Link>
               ) : (
-                <span className={styles.muted}>Borrador local</span>
+                <span className={styles.muted}>
+                  {persistence === "supabase" ? "Borrador privado" : "Borrador local"}
+                </span>
               )}
             </article>
           ))}

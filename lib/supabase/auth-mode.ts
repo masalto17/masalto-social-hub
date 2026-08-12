@@ -15,8 +15,8 @@ export function getAuthMode(environment: AuthEnvironment = process.env): AuthMod
       environment.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim(),
   );
 
-  if (environment.OWNER_ACCESS_SECRET?.trim()) return "owner";
   if (configured) return "configured";
+  if (environment.OWNER_ACCESS_SECRET?.trim()) return "owner";
 
   const explicitlyLocalPrototype =
     environment.ALLOW_PROTOTYPE_AUTH === "true" &&

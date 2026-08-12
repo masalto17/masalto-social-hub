@@ -6,11 +6,19 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
 } from "react";
 import { authorizeContentOperation } from "@/app/app/contenido/actions";
 import { demoWorkspace } from "@/lib/demo-workspace";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import {
+  loadWorkspace,
+  migrateLocalWorkspace,
+  persistWorkspace,
+} from "@/lib/workspace-persistence";
+import {
+  emptyWorkspace,
   uniqueSlug,
   type ActivityRecord,
   type NewCampaignPhaseInput,
@@ -27,6 +35,39 @@ const LEGACY_STORAGE_KEYS = [
   "masalto_social_hub_workspace_v2",
   "masalto_social_hub_workspace_v1",
 ] as const;
+
+function readStoredWorkspace() {
+  const raw =
+    window.localStorage.getItem(STORAGE_KEY) ??
+    LEGACY_STORAGE_KEYS.map((key) => window.localStorage.getItem(key)).find(Boolean);
+  if (!raw) return null;
+
+  const stored = JSON.parse(raw) as WorkspaceState & {
+    version: 1 | 2 | 3 | 4;
+    salesSnapshots?: WorkspaceState["salesSnapshots"];
+    campaignPhases?: WorkspaceState["campaignPhases"];
+    publishingTasks: Array<
+      Omit<WorkspaceState["publishingTasks"][number], "copy"> & {
+        copy?: string;
+      }
+    >;
+  };
+  return {
+    ...stored,
+    version: 4,
+    salesSnapshots: stored.salesSnapshots ?? [],
+    campaignPhases: stored.campaignPhases ?? [],
+    publishingTasks: stored.publishingTasks.map((task) => {
+      const content = stored.content.find((item) => item.id === task.contentId);
+      return { ...task, copy: task.copy ?? content?.baseCopy ?? "" };
+    }),
+  } satisfies WorkspaceState;
+}
+
+function clearStoredWorkspace() {
+  window.localStorage.removeItem(STORAGE_KEY);
+  LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
+}
 
 type WorkspaceAction =
   | { type: "hydrate"; state: WorkspaceState }
@@ -48,6 +89,7 @@ type WorkspaceAction =
 type WorkspaceContextValue = {
   state: WorkspaceState;
   hydrated: boolean;
+  persistence: "local" | "supabase";
   createEvent: (input: NewEventInput) => void;
   createCampaign: (input: NewCampaignInput) => void;
   createCampaignPhase: (input: NewCampaignPhaseInput) => boolean;
@@ -311,67 +353,76 @@ function reducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState
   }
 }
 
-export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, demoWorkspace);
+export function WorkspaceProvider({
+  children,
+  useSupabase = false,
+}: {
+  children: React.ReactNode;
+  useSupabase?: boolean;
+}) {
+  const [state, dispatch] = useReducer(
+    reducer,
+    useSupabase ? emptyWorkspace : demoWorkspace,
+  );
   const [hydrated, setHydrated] = useState(false);
+  const skipNextRemoteWrite = useRef(false);
+  const remoteWriteQueue = useRef(Promise.resolve());
 
   useEffect(() => {
-    const restore = window.setTimeout(() => {
+    let cancelled = false;
+    const restore = window.setTimeout(async () => {
       try {
-        const raw =
-          window.localStorage.getItem(STORAGE_KEY) ??
-          LEGACY_STORAGE_KEYS.map((key) => window.localStorage.getItem(key)).find(
-            Boolean,
-          );
-        if (raw) {
-          const stored = JSON.parse(raw) as WorkspaceState & {
-            version: 1 | 2 | 3 | 4;
-            salesSnapshots?: WorkspaceState["salesSnapshots"];
-            campaignPhases?: WorkspaceState["campaignPhases"];
-            publishingTasks: Array<
-              Omit<WorkspaceState["publishingTasks"][number], "copy"> & {
-                copy?: string;
-              }
-            >;
-          };
-          const state: WorkspaceState = {
-            ...stored,
-            version: 4,
-            salesSnapshots: stored.salesSnapshots ?? [],
-            campaignPhases: stored.campaignPhases ?? [],
-            publishingTasks: stored.publishingTasks.map((task) => {
-              const content = stored.content.find(
-                (item) => item.id === task.contentId,
-              );
-              return {
-                ...task,
-                copy: task.copy ?? content?.baseCopy ?? "",
-              };
-            }),
-          };
-          dispatch({ type: "hydrate", state });
+        const stored = readStoredWorkspace();
+        if (useSupabase) {
+          const client = createBrowserSupabaseClient();
+          const remoteState = stored
+            ? await migrateLocalWorkspace(client, stored)
+            : await loadWorkspace(client);
+          if (cancelled) return;
+          skipNextRemoteWrite.current = true;
+          dispatch({ type: "hydrate", state: remoteState });
+          clearStoredWorkspace();
+        } else if (stored) {
+          dispatch({ type: "hydrate", state: stored });
           LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
         }
       } catch {
-        window.localStorage.removeItem(STORAGE_KEY);
-        LEGACY_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
+        if (!useSupabase) clearStoredWorkspace();
       } finally {
-        setHydrated(true);
+        if (!cancelled) setHydrated(true);
       }
     }, 0);
 
-    return () => window.clearTimeout(restore);
-  }, []);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(restore);
+    };
+  }, [useSupabase]);
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [hydrated, state]);
+    if (!useSupabase) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      return;
+    }
+    if (skipNextRemoteWrite.current) {
+      skipNextRemoteWrite.current = false;
+      return;
+    }
+
+    remoteWriteQueue.current = remoteWriteQueue.current
+      .then(() => persistWorkspace(createBrowserSupabaseClient(), state))
+      .then(() => undefined)
+      .catch((error: unknown) => {
+        console.error("No se pudo persistir el workspace en Supabase.", error);
+      });
+  }, [hydrated, state, useSupabase]);
 
   const value = useMemo<WorkspaceContextValue>(
     () => ({
       state,
       hydrated,
+      persistence: useSupabase ? "supabase" : "local",
       createEvent: (input) => dispatch({ type: "create_event", input }),
       createCampaign: (input) => dispatch({ type: "create_campaign", input }),
       createCampaignPhase: (input) => {
@@ -411,9 +462,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       },
       moveTask: (taskId, scheduledAt) =>
         dispatch({ type: "move_task", taskId, scheduledAt }),
-      resetDemo: () => dispatch({ type: "reset_demo" }),
+      resetDemo: () => {
+        if (!useSupabase) dispatch({ type: "reset_demo" });
+      },
     }),
-    [hydrated, state],
+    [hydrated, state, useSupabase],
   );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
