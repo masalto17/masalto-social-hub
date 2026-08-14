@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { setPassword } from "./actions";
+import { SetPasswordForm } from "./set-password-form";
 import styles from "../login/login.module.css";
 
 export const metadata: Metadata = {
   title: "Definir contraseña | MasAlto Social Hub",
   robots: { index: false, follow: false },
-};
-
-const errorMessages: Record<string, string> = {
-  length: "La contraseña debe tener al menos 12 caracteres.",
-  mismatch: "Las contraseñas no coinciden.",
-  update: "No pudimos guardar la contraseña. Solicitá una nueva invitación.",
 };
 
 export default async function SetPasswordPage({
@@ -35,38 +29,7 @@ export default async function SetPasswordPage({
         <p className={styles.eyebrow}>Social Hub</p>
         <h1>Definir contraseña</h1>
 
-        <form className={styles.form} action={setPassword}>
-          {error ? (
-            <p className={styles.error} role="alert">
-              {errorMessages[error] ?? errorMessages.update}
-            </p>
-          ) : null}
-          <div className={styles.field}>
-            <label htmlFor="password">Nueva contraseña</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              minLength={12}
-              required
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="confirmation">Repetir contraseña</label>
-            <input
-              id="confirmation"
-              name="confirmation"
-              type="password"
-              autoComplete="new-password"
-              minLength={12}
-              required
-            />
-          </div>
-          <button className={styles.button} type="submit">
-            Guardar y entrar
-          </button>
-        </form>
+        <SetPasswordForm error={error} />
       </section>
     </main>
   );

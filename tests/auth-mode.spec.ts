@@ -93,3 +93,42 @@ test("rejects an invite callback without a valid token", async ({ request }) => 
   expect(location.pathname).toBe("/login");
   expect(location.searchParams.get("error")).toBe("invite");
 });
+
+test("rejects a session bridge request without tokens", async ({ request }) => {
+  const response = await request.post("/auth/session", { data: {} });
+
+  expect(response.status()).toBe(400);
+  await expect(response.json()).resolves.toEqual({ error: "invalid_session" });
+});
+
+test("offers password recovery from the configured login", async ({ page }) => {
+  await page.goto("/forgot-password");
+
+  await expect(
+    page.getByRole("heading", { name: "Recuperar contraseña" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Enviar enlace" })).toBeVisible();
+});
+
+test("restores an email-link session before enabling password update", async ({
+  page,
+}) => {
+  let requestBody: unknown;
+  await page.route("**/auth/session", async (route) => {
+    requestBody = route.request().postDataJSON();
+    await route.fulfill({ status: 204 });
+  });
+
+  await page.goto(
+    "/set-password#access_token=test-access&refresh_token=test-refresh&type=recovery",
+  );
+
+  await expect(
+    page.getByRole("button", { name: "Guardar y entrar" }),
+  ).toBeEnabled();
+  expect(requestBody).toEqual({
+    accessToken: "test-access",
+    refreshToken: "test-refresh",
+  });
+  expect(new URL(page.url()).hash).toBe("");
+});
