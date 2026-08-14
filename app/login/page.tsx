@@ -65,7 +65,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <form className={styles.form} action={signIn}>
             {error ? (
               <p className={styles.error} role="alert">
-                {error === "missing"
+                {error === "invite"
+                  ? "La invitación venció o no es válida. Solicitá una nueva."
+                  : error === "missing"
                   ? "Completá email y contraseña."
                   : "No pudimos validar esas credenciales."}
               </p>

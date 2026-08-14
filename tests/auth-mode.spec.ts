@@ -84,3 +84,12 @@ test("does not expose a logout operation in prototype mode", async ({
   expect(response.status()).toBe(303);
   expect(new URL(response.headers().location).pathname).toBe("/");
 });
+
+test("rejects an invite callback without a valid token", async ({ request }) => {
+  const response = await request.get("/auth/confirm", { maxRedirects: 0 });
+
+  expect(response.status()).toBe(307);
+  const location = new URL(response.headers().location);
+  expect(location.pathname).toBe("/login");
+  expect(location.searchParams.get("error")).toBe("invite");
+});
