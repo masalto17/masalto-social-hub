@@ -75,6 +75,11 @@
   cursor: pointer;
 }
 
+.button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .back {
   display: inline-block;
   margin-top: 20px;

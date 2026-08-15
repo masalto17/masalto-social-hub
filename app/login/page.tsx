@@ -96,6 +96,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <button className={styles.button} type="submit">
               Ingresar
             </button>
+            <Link className={styles.back} href="/forgot-password">
+              Definir o recuperar contraseña
+            </Link>
           </form>
         )}
 
