@@ -18,7 +18,8 @@ import { getUncoveredCampaignPhases } from "@/lib/campaign-phases";
 import { formatStatus } from "@/lib/workspace-model";
 
 export default function DashboardPage() {
-  const { state, hydrated } = useWorkspace();
+  const { state, hydrated, persistence } = useWorkspace();
+  const usesSupabase = persistence === "supabase";
   const event = state.events[0];
   const campaign = state.campaigns.find((item) => item.eventId === event?.id);
   const latestSales = [...state.salesSnapshots]
@@ -36,7 +37,7 @@ export default function DashboardPage() {
     {
       label: "Eventos activos",
       value: String(state.events.filter((item) => item.saleStatus !== "finished").length),
-      detail: "Datos del espacio local",
+      detail: usesSupabase ? "Datos del espacio compartido" : "Datos del espacio local",
     },
     {
       label: "Campañas activas",
@@ -44,7 +45,7 @@ export default function DashboardPage() {
         state.campaigns.filter((item) => ["planned", "active"].includes(item.status))
           .length,
       ),
-      detail: "Pendientes de backend",
+      detail: usesSupabase ? "Persistencia en Supabase" : "Pendientes de backend",
     },
     {
       label: "Piezas aprobadas",
@@ -62,7 +63,9 @@ export default function DashboardPage() {
     <>
       <header className="topbar">
         <div>
-          <p className="eyebrow">Espacio de trabajo · persistencia local</p>
+          <p className="eyebrow">
+            Espacio de trabajo · {usesSupabase ? "Supabase" : "persistencia local"}
+          </p>
           <h1>Panel de campañas y eventos</h1>
         </div>
         <div className="topbar-actions">
