@@ -1,6 +1,7 @@
 const META_PIXEL_PATTERN = /^\d{5,32}$/;
 const GA4_MEASUREMENT_PATTERN = /^G-[A-Z0-9]+$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEFAULT_PRIVACY_CONTACT_EMAIL = "info@masalto.com.ar";
 
 export type AnalyticsConfig = {
   enabled: boolean;
@@ -24,7 +25,7 @@ export function getAnalyticsConfig(): AnalyticsConfig {
     GA4_MEASUREMENT_PATTERN,
   );
   const privacyContactEmail = validValue(
-    process.env.NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL,
+    process.env.NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL ?? DEFAULT_PRIVACY_CONTACT_EMAIL,
     EMAIL_PATTERN,
   );
 

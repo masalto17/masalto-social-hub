@@ -42,23 +42,34 @@ test("publishes Event structured data", async ({ page }) => {
   expect(event.offers.priceCurrency).toBe("ARS");
 });
 
-test("keeps optional analytics disabled without production configuration", async ({
-  page,
-}) => {
+test("keeps optional analytics disabled until the visitor consents", async ({ page }) => {
+  await page.route("**/googletagmanager.com/**", (route) => route.abort());
+  await page.route("**/connect.facebook.net/**", (route) => route.abort());
   await page.goto(eventPath);
 
   await expect(page.locator("#meta-pixel")).toHaveCount(0);
   await expect(page.locator("#ga4")).toHaveCount(0);
   await expect(page.locator('script[src*="googletagmanager.com"]')).toHaveCount(0);
-  await expect(page.getByLabel("Preferencias de privacidad")).toHaveCount(0);
+  await expect(page.getByLabel("Preferencias de privacidad")).toBeVisible();
+
+  await page.getByRole("button", { name: "Aceptar medición" }).click();
+
+  await expect(page.locator("#meta-pixel")).toHaveCount(1);
+  await expect(page.locator("#ga4")).toHaveCount(1);
+  await expect(page.locator('script[src*="googletagmanager.com"]')).toHaveCount(1);
 });
 
-test("publishes a draft privacy route without indexing it", async ({ page }) => {
+test("publishes the approved privacy route without indexing it", async ({ page }) => {
   const response = await page.goto("/privacidad");
 
   expect(response?.status()).toBe(200);
   await expect(page).toHaveTitle(/Privacidad/);
   await expect(page.getByRole("heading", { name: "Política de privacidad" })).toBeVisible();
+  await expect(page.getByText("Política vigente desde el 19 de agosto de 2026")).toBeVisible();
+  await expect(page.getByRole("link", { name: "info@masalto.com.ar" })).toHaveAttribute(
+    "href",
+    "mailto:info@masalto.com.ar",
+  );
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
     "content",
     /noindex/,

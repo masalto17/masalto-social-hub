@@ -24,20 +24,17 @@ export default function PrivacyPage() {
       </header>
 
       <article className={styles.content}>
-        <p className={styles.status}>Borrador sujeto a validación legal y comercial</p>
+        <p className={styles.status}>Política vigente desde el 19 de agosto de 2026</p>
         <h1>Política de privacidad</h1>
         <p className={styles.intro}>
-          Esta versión explica la medición prevista para las páginas de eventos. La
-          analítica permanece desactivada hasta completar los datos del responsable,
-          aprobar esta política y configurar los identificadores oficiales de MasAlto.
+          Esta política explica cómo se realiza la medición opcional en las páginas de
+          eventos de MasAlto Producciones.
         </p>
 
         <section>
           <h2>Responsable</h2>
           <p>
-            MasAlto Producciones, San Juan, Argentina. El nombre legal completo, domicilio
-            y canal definitivo para ejercer derechos deben confirmarse antes de activar
-            la medición.
+            MasAlto Producciones, San Juan, Argentina.
           </p>
           {privacyContactEmail ? (
             <p>
@@ -45,7 +42,7 @@ export default function PrivacyPage() {
               <a href={`mailto:${privacyContactEmail}`}>{privacyContactEmail}</a>.
             </p>
           ) : (
-            <p>Canal de privacidad: pendiente de confirmación.</p>
+            <p>La medición permanece desactivada mientras no exista un canal de contacto.</p>
           )}
         </section>
 
@@ -82,8 +79,8 @@ export default function PrivacyPage() {
           <h2>Tus derechos</h2>
           <p>
             Podés solicitar información, acceso, rectificación, actualización o supresión
-            de tus datos según la Ley 25.326. La versión final incluirá el canal formal y
-            los plazos de conservación aprobados.
+            de tus datos según la Ley 25.326 mediante el contacto de privacidad indicado
+            en esta página.
           </p>
         </section>
 
