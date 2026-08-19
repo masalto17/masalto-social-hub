@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 import { demoWorkspace } from "@/lib/demo-workspace";
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("masalto_analytics_consent", "rejected");
+  });
+});
+
 test("separates the public catalog from the internal workspace", async ({ page }) => {
   await page.goto("/");
 
