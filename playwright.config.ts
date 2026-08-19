@@ -24,7 +24,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `ALLOW_PROTOTYPE_AUTH=true NEXT_PUBLIC_SABROSO_TICKET_URL=https://www.entradaweb.com.ar/evento/sabroso-test/step/1 npm run dev -- --port ${testPort}`,
+    command: `ALLOW_PROTOTYPE_AUTH=true NEXT_PUBLIC_SABROSO_TICKET_URL=https://www.entradaweb.com.ar/evento/sabroso-test/step/1 NEXT_PUBLIC_ANALYTICS_ENABLED=true NEXT_PUBLIC_META_PIXEL_ID=606713596143846 NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-LNXJ9LF7B3 npm run dev -- --port ${testPort}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
