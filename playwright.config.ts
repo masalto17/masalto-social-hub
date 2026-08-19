@@ -2,7 +2,6 @@ import { defineConfig, devices } from "@playwright/test";
 
 const testPort = process.env.PLAYWRIGHT_PORT ?? "3100";
 const baseURL = `http://127.0.0.1:${testPort}`;
-const serverCommand = process.env.CI ? "npm run start" : "npm run dev";
 
 export default defineConfig({
   testDir: "./tests",
@@ -25,7 +24,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `ALLOW_PROTOTYPE_AUTH=true NEXT_PUBLIC_SABROSO_TICKET_URL=https://www.entradaweb.com.ar/evento/sabroso-test/step/1 NEXT_PUBLIC_ANALYTICS_ENABLED=true NEXT_PUBLIC_META_PIXEL_ID=606713596143846 NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-LNXJ9LF7B3 ${serverCommand} -- --port ${testPort}`,
+    command: `ALLOW_PROTOTYPE_AUTH=true NEXT_PUBLIC_SABROSO_TICKET_URL=https://www.entradaweb.com.ar/evento/sabroso-test/step/1 NEXT_PUBLIC_ANALYTICS_ENABLED=true NEXT_PUBLIC_META_PIXEL_ID=606713596143846 NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-LNXJ9LF7B3 npm run dev -- --port ${testPort}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
